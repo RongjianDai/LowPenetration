@@ -7,8 +7,6 @@ Created on 2021-12-14
 
 import gurobipy as gp
 from gurobipy import GRB
-import numpy as np
-from Parameters import *
 
 
 def optimization(Q):
@@ -118,7 +116,7 @@ def optimization(Q):
 
         # Set the parameter
         # model.Params.method = 1
-        model.Params.LogToConsole = True  # 显示求解过程
+        model.Params.LogToConsole = False  # 显示求解过程
         # model.Params.MIPGap = 0.0001  # 百分比界差
         # model.Params.TimeLimit = 0.4  # 限制求解时间为 0.4 s
 
@@ -128,7 +126,7 @@ def optimization(Q):
         # print("Largest multiplier = ", u.X)
         for i in range(4):
             multiplier[i] = u[i].X
-        print('u: ', multiplier)
+        # print('u: ', multiplier)
 
         # Get the lane assignment scheme
         for i in range(4):
@@ -142,14 +140,24 @@ def optimization(Q):
     except AttributeError:
         print('Encountered an attribute error')
 
-    return fun
+    return fun, multiplier
 
 
-fun = optimization(basicQ)
-for i in range(4):
-    print('Arm', i, ": ")
-    for j in range(4):
-        if j != i:
-            for k in range(4):
-                if fun[i][j][k] == 1:
-                    print('Lane', k, ': To arm', j)
+# 判断lane-group模式
+def schemeLA():
+
+    return 1
+
+
+# Q = [[0, 200, 400, 100],
+#           [150, 0, 150, 200],
+#           [380, 150, 0, 180],
+#           [100, 200, 100, 0]]
+# (fun, u) = optimization(Q)
+# for i in range(4):
+#     print('Arm', i, '-- u: ', u[i])
+#     for j in range(4):
+#         if j != i:
+#             for k in range(4):
+#                 if fun[i][j][k] == 1:
+#                     print('Lane', k, ': To arm', j)

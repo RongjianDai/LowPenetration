@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-Created on Date
+Created on Date 2022-01-14
 
 @author: Rongjian Dai
 """
 
 import numpy as np
-from Parameters import *
+from LA import *
 
 
-def SH(init, signal):
+# 判断
 
-    return 1
+
+

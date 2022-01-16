@@ -8,7 +8,7 @@ Created on 2021-12-14
 import gurobipy as gp
 from gurobipy import GRB
 import numpy as np
-from Parameters import *
+from Initialize import *
 
 
 def optimization(Q):
