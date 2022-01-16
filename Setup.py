@@ -10,7 +10,7 @@ import LA
 
 
 # Initialize the slope of Q
-def qvariation(basicQ, T, vt):
+def qvariation(turning, basicQ, T, vt):
     """
     :param basicQ: 基础流量
     :param T: 仿真时长
@@ -20,9 +20,7 @@ def qvariation(basicQ, T, vt):
     s = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
     for i in range(4):
         # 提取各转向基础流量
-        lt = i - 1 if i - 1 >= 0 else i + 3
-        sa = i + 2 if i + 2 <= 3 else i - 2
-        rt = i + 1 if i + 1 <= 3 else i - 3
+        (lt, sa, rt) = (turning[i][0], turning[i][1], turning[i][2])
         (lq, sq, rq) = (basicQ[i][lt], basicQ[i][sa], basicQ[i][rt])
         # 计算差值及变化率
         if vt[i] == 0:    # 不变化
@@ -42,13 +40,12 @@ def qvariation(basicQ, T, vt):
     return s
 
 
-def initialize(basicQ, slope, vmax, P, vt, T):
+def initialize(basicQ, slope, vmax, P, T):
     """
     初始化：生成车辆初始状态
     :param basicQ: 基础交通流[4][4]列表
     :param vmax: 最大速度1*3元组
     :param P: 渗透率
-    :param vt: 变化模式---vt[i]=0表示不变化； vt[i]=1表示arm i上左转和直行变化；vt[i]=2表示arm i上右转转和直行变化；vt[i]=3表示arm i上左转和右转变化
     :param T: 周期时长
     :return:
     """
@@ -71,7 +68,7 @@ def genveh(q, vmax, P, slope, T):
     t0 = np.random.uniform(0, 5)
     type = 1 if np.random.random() <= P else 0
     v0 = np.random.uniform(0.8*vmax, vmax)
-    init.append([t0, v0, type])
+    init.append([t0, v0, vmax, type])
     # 所有车
     clock = t0
     averh = 3600 / q
@@ -85,19 +82,13 @@ def genveh(q, vmax, P, slope, T):
             t_ = clock
             v0 = np.random.uniform(0.8 * vmax, vmax)
             type = 1 if np.random.random() <= P else 0
-            init.append([t_, v0, type])
+            init.append([t_, v0, vmax, type])
 
     return init
 
 
 # Real-time traffic volume for a turning movement
 def qt(time, q0, slope):
-    """
-    :param time: 时刻，单位为秒s
-    :param q0: 初始流量
-    :param slope: 斜率
-    :return: 实时流量
-    """
     rq = q0 + slope * time
     return rq
 
@@ -138,48 +129,39 @@ def saturation(sET):
     sLT = sET / (1 + (1.125 - 1) * 0.5)
     sRT = sET / (1 + (1.25 - 1) * 0.5)
     # print('EL:', sEL, 'ER:', sER, 'LT:', sLT, 'RT:', sRT)
-    return sET, sEL, sER, sLT, sRT
+    return sEL, sLT, sET, sRT, sER
 
 
 # 计算供给向量表
-def supply(S):
-    B = []
-    (minL, minR) = (0.5 * S[3], 0.5 * S[4])
+def supply(S, schemes):
+    V = []
     for i in range(6):
-        b = []
-        (m, n) = (6 - i, 5 - i)
-        if i % 2 == 0:
-            sR = minR + (i / 2) * S[2]
-            minT = minR
-            for j in range(m):
-                if j % 2 == 0:
-                    sL = ((m - j) / 2) * S[1]
-                    sT = minT + (j / 2) * S[0]
-                else:
-                    sL = ((n - j) / 2) * S[1] + 0.5 * S[3]
-                    sT = minT + ((j - 1) / 2) * S[0] + 0.5 * S[3]
-                b.append([sL, sT, sR])
-            for j in range(m, 6):
-                b.append([])
-        else:
-            sR = ((i + 1) / 2) * S[2]
-            minT = minL
-            for j in range(m):
-                if j % 2 == 0:
-                    sL = ((n - j) / 2) * S[1] + 0.5 * S[3]
-                    sT = (j / 2) * S[0] + 0.5 * S[3]
-                else:
-                    sL = ((m - j) / 2) * S[1]
-                    sT = ((j + 1) / 2) * S[0]
-                b.append([sL, sT, sR])
-            for j in range(m, 6):
-                b.append([])
-        B.append(b)
-    return B
+        v = []
+        for j in range(6):
+            (lt, sa, rt) = (0, 0, 0)
+            if len(schemes[i][j]) == 4:
+                for k in range(4):
+                    if schemes[i][j][k] == 1:
+                        lt += S[0]
+                    elif schemes[i][j][k] == 2:
+                        lt += 0.5 * S[1]
+                        sa += 0.5 * S[1]
+                    elif schemes[i][j][k] == 3:
+                        sa += S[2]
+                    elif schemes[i][j][k] == 4:
+                        sa += 0.5 * S[3]
+                        rt += 0.5 * S[3]
+                    else:
+                        rt += S[4]
+                v.append([lt, sa, rt])
+            else:
+                v.append([])
+        V.append(v)
+    return V
 
 
 # 车道功能优化
-def lanemarking(QT):
+def lanemarking(QT, sET):
     """
     :param T:
     :param QT: 每个控制周期的流量矩阵
@@ -187,9 +169,12 @@ def lanemarking(QT):
     """
     marking = {}
     mulit = {}
+    armpattern = {}
     for (c, Q) in QT.items():
-        (fun, u) = LA.optimization(Q)
+        # 优化LA
+        (fun, u) = LA.optimization(Q, sET)
         marking[c] = fun
         mulit[c] = u
     return marking, mulit
+
 

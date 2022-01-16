@@ -9,7 +9,7 @@ import gurobipy as gp
 from gurobipy import GRB
 
 
-def optimization(Q):
+def optimization(Q, SF):
     """
     :param Q: 交通需求
     :return: 控制策略，车道功能
@@ -20,8 +20,7 @@ def optimization(Q):
          [1.125, 0, 1.25, 1],
          [1, 1.125, 0, 1.25],
          [1.25, 1, 1.125, 0]]
-    # ET车道通行能力
-    SF = 1636
+
     # 存储车道功能
     fun = [[[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
            [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
@@ -143,17 +142,11 @@ def optimization(Q):
     return fun, multiplier
 
 
-# 判断lane-group模式
-def schemeLA():
-
-    return 1
-
-
-# Q = [[0, 200, 400, 100],
-#           [150, 0, 150, 200],
-#           [380, 150, 0, 180],
-#           [100, 200, 100, 0]]
-# (fun, u) = optimization(Q)
+# Q = [[0, 200, 400, 100], [150, 0, 150, 200], [380, 150, 0, 180], [100, 200, 100, 0]]
+# turning = [[3, 2, 1], [0, 3, 2], [1, 0, 3], [2, 1, 0]]
+# SF = 1636
+# (fun, u) = optimization(Q, SF)
+# schemes = lanepattern(fun, turning)
 # for i in range(4):
 #     print('Arm', i, '-- u: ', u[i])
 #     for j in range(4):
@@ -161,3 +154,4 @@ def schemeLA():
 #             for k in range(4):
 #                 if fun[i][j][k] == 1:
 #                     print('Lane', k, ': To arm', j)
+# print(schemes)

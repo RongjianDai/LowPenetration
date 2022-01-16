@@ -8,7 +8,7 @@ Created on 2021-12-14
 import gurobipy as gp
 from gurobipy import GRB
 import numpy as np
-from Initialize import *
+from Setup import *
 
 
 def optimization(Q):
@@ -139,12 +139,3 @@ def optimization(Q):
 
     return fun
 
-
-fun = optimization(basicQ)
-for i in range(4):
-    print('Arm', i, ": ")
-    for j in range(4):
-        if j != i:
-            for k in range(4):
-                if fun[i][j][k] == 1:
-                    print('Lane', k, ': To arm', j)

@@ -6,8 +6,7 @@ Created on Date
 """
 
 import numpy as np
-from Input import *
-from Movements import *
+from Scenario import *
 
 
 def DP(H, ming, r):
