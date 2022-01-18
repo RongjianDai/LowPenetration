@@ -146,7 +146,6 @@ def optimization(Q, SF):
 # turning = [[3, 2, 1], [0, 3, 2], [1, 0, 3], [2, 1, 0]]
 # SF = 1636
 # (fun, u) = optimization(Q, SF)
-# schemes = lanepattern(fun, turning)
 # for i in range(4):
 #     print('Arm', i, '-- u: ', u[i])
 #     for j in range(4):
@@ -154,4 +153,3 @@ def optimization(Q, SF):
 #             for k in range(4):
 #                 if fun[i][j][k] == 1:
 #                     print('Lane', k, ': To arm', j)
-# print(schemes)

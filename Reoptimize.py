@@ -23,6 +23,7 @@ def reoptLA(QT, marking, supTab, schemeset, turning):
             optQ = QT[lastc]
             nowQ = QT[c]
             optpat = lanepattern(marking[lastc], turning)
+            # print('cycle:', c)
             c1 = firstceritrion(optQ, nowQ, turning)
             c2 = secondceritrion(optpat, nowQ, supTab, schemeset, turning)
             if c1 is True:   # 需求模式相同，不需重新优化
@@ -41,14 +42,14 @@ def reoptLA(QT, marking, supTab, schemeset, turning):
 
 # 准则1，demand vector变化情况
 def firstceritrion(optQ, nowQ, turning):
-    c1 = True
+    c1 = True    # 假设变化方向是共线的
     for i in range(4):
         (lt, sa, rt) = (turning[i][0], turning[i][1], turning[i][2])
         optdemv = np.array([optQ[i][lt], optQ[i][sa], optQ[i][rt]])
         nowdemv = np.array([nowQ[i][lt], nowQ[i][sa], nowQ[i][rt]])
         # 计算叉积 cross product
         crossp = np.cross(optdemv, nowdemv)
-        if len(np.nonzero(crossp)):    # 只要有一个Arm不平行就可能需要重新优化，不需继续判断
+        if np.any(crossp):    # 只要有一个Arm不平行就可能需要重新优化，不需继续判断
             c1 = False
             break
         else:
@@ -84,6 +85,7 @@ def secondceritrion(optpat, nowQ, supTab, schemeset, turning):
         for index in neigind:
             potsupv = np.array(supTab[index[0]][index[1]])      # potential supply vector
             potsim = similarity(nowdemv, potsupv)       # Corresponding cosine similarity
+            # print('Arm', i, 'nowdem:', nowdemv, 'potsupv', potsupv, 'potsim', potsim, 'nowsim', nowsim)
             if potsim > nowsim:
                 c2 = True
                 break
@@ -98,7 +100,7 @@ def secondceritrion(optpat, nowQ, supTab, schemeset, turning):
 
 # 计算 cosine similarity
 def similarity(v1, v2):
-    sim = (np.dot(v1, v2)) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+    sim = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
     return sim
 
 

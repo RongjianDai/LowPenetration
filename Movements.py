@@ -20,11 +20,12 @@ def movements(entry, Scheme, turning, H):
         rtmove = entry[rtkey]
         lanelevel = [[], [], [], []]
         total = [0, 0, 0, 0]
+        lastbir = [0, 0, 0, 0]
         moves = [ltmove, thmove, rtmove]
         turn = [lj, tj, rj]
         c = 0
         while True:
-            # 该Arm上所有车辆分配完成后结束
+            # 该Arm上所有车辆分配完成后结束循环
             if len(ltmove) + len(thmove) + len(rtmove) == 0:
                 break
             end = c * H + H
@@ -50,14 +51,14 @@ def movements(entry, Scheme, turning, H):
                     if len(usedlane) == 1:  # 若只有一条车道可用，直接分配
                         thislane = usedlane[0]
                         lanelevel[thislane].append(veh)
-                        total[thislane] += 1
-                    else:  # 若有多条车道可选，则选择车辆最少的那个
-                        less = usedlane[0]
+                        lastbir[thislane] = birth[first]
+                    else:  # 若有多条车道可选，则选择和上一辆车车头时距最大的那个
+                        last = usedlane[0]
                         for k in usedlane:
-                            if total[k] < total[less]:
-                                less = k
-                        lanelevel[less].append(veh)
-                        total[less] += 1
+                            if lastbir[k] < lastbir[last]:
+                                last = k
+                        lanelevel[last].append(veh)
+                        lastbir[last] = birth[first]
 
         initstate[i * 4] = lanelevel[0]
         initstate[i * 4 + 1] = lanelevel[1]
@@ -80,3 +81,10 @@ def availablelane(oarm, turn, Scheme):
                 continue
         lanes.append(l)
     return lanes
+
+
+# 传统模式下的车辆分配
+def tramovements():
+    initstate = {}
+
+    return initstate

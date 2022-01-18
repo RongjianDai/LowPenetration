@@ -4,10 +4,11 @@ Created on Date 2022-01-14
 
 @author: Rongjian Dai
 """
+
 from Scenario import *
 from Setup import *
 import Reoptimize
-import Savedata
+import W_R_data
 import Movements
 
 
@@ -33,4 +34,11 @@ QT = Qt(H, T, basicQ, slope)
 entry = initialize(basicQ, slope, vmax, P, T)
 # 将车辆组成16个lane-level movements
 initstate = Movements.movements(entry, Scheme, turning, H)
+
+# Save the initial states of vehicles for each lane-level movement as a .xls file
+W_R_data.saveinit(initstate)
+# Save the lane assignment schemes in each control cycle as a .csv file
+W_R_data.saveLA(lanegroup)
+
+
 
