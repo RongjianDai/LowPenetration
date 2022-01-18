@@ -22,15 +22,6 @@ class Vehicle:
         self.ps = []
         self.sinit = None
 
-    # 给出安全边界 ps
-    def shadow(self):
-        (t0, v0) = (self.linit[0], self.linit[1])
-        st0 = t0 + self.toff + self.doff / v0
-        sX = self.locatspeed(self.linit, self.lp, (st0 - self.toff))
-        self.sinit = [st0, sX[1]]
-        for seg in self.lp:
-            self.ps.append([seg[0], (seg[1] + self.toff), (seg[2] + self.toff)])
-
     # The SH algorithm for CAVs
     def SH(self, signal, L):
         p = []  # [number of segments][3] list: [][0] 加速度；[][1] 开始时间；[][2] 结束时间；
@@ -46,7 +37,6 @@ class Vehicle:
         else:  # There is a preceding vehicle for this one
             # Get the safety boundary
             self.shadow()
-            print('ps', self.ps)
             tvmax = t0 + (vmax - v0) / self.a1
             arrival = self.fastarrival(L)
             pf.append([self.a1, t0, tvmax])
@@ -54,9 +44,7 @@ class Vehicle:
             # 判断加速结束时刻是否会与安全边界相交
             selfX = self.locatspeed(self.init, pf, arrival)
             shadX = self.locatspeed(self.sinit, self.ps, arrival)
-            print('ps', shadX[0], 'this', selfX[0])
             if shadX[0] > selfX[0]:  # 不相交，前向轨迹生成完毕
-                print('不相交！')
                 pass
             else:
                 for s in range(len(pf)):
@@ -105,8 +93,8 @@ class Vehicle:
                     (xn_1, xn) = (shadX[0], selfX[0])
                     (ts, tm) = (Symbol('ts'), Symbol('tm'))
                     eq1 = (an - self.a2) * ts + (self.a2 - an_1) * tm - (vn_1 - vn + an * tn - an_1 * tn_1)
-                    eq2 = 0.5*(self.a2-an_1)*tm**2 - 0.5*(self.a2-an)*ts**2 + (an-self.a2)*ts*tm+(vn-an*tn+an_1*tn_1-vn_1)*tm+ \
-                          (xn-xn_1+vn_1*tn_1-vn*tn+0.5*an*tn**2-0.5*an_1*tn_1**2)
+                    eq2 = 0.5 * (self.a2 - an_1) * tm**2 - 0.5 * (self.a2 - an) * ts**2 + (an - self.a2) * ts * tm + \
+                          (vn - an * tn + an_1 * tn_1 - vn_1) * tm + (xn - xn_1 + vn_1 * tn_1 - vn * tn + 0.5 * an * tn**2 - 0.5 * an_1 * tn_1**2)
                     variables = [ts, tm]
                     eqs = [eq1, eq2]
                     result = self.solve(eqs, variables)
@@ -114,6 +102,7 @@ class Vehicle:
                         ismerge = True
                         (Ts, Tm) = (result[0], result[1])
                     else:
+                        # print('No sulotion!')
                         continue
         else:  # Backward shooting
             pass
@@ -124,6 +113,15 @@ class Vehicle:
     def solve(variables, eqs):
         result = solve(eqs, variables)
         return result
+
+    # 给出安全边界 ps
+    def shadow(self):
+        (t0, v0) = (self.linit[0], self.linit[1])
+        st0 = t0 + self.toff + self.doff / v0
+        sX = self.locatspeed(self.linit, self.lp, (st0 - self.toff))
+        self.sinit = [st0, sX[1]]
+        for seg in self.lp:
+            self.ps.append([seg[0], (seg[1] + self.toff), (seg[2] + self.toff)])
 
     # The location at the given time for a p and initial state
     @staticmethod
