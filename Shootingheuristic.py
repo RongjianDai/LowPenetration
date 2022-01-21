@@ -15,7 +15,8 @@ from Vehicle import *
 def construction(state, signal, a1, a2, L, H):
     P = []
     platoon = []
-    (toff, doff) = (1, 5.5)
+    toff = (1, 2)
+    doff = (5.5, 6.5)
     for n in range(len(state)):
         platoon.append(Vehicle(a1, a2, toff, doff, n, state[n]))
     for n in range(len(platoon)):
@@ -105,7 +106,6 @@ move = state[0][0:20]
 print(move)
 (P, platoon) = construction(move, green, a1, a2, L, H)
 plotTra(platoon, P, L, green, H)
-
 
 
 

@@ -14,14 +14,15 @@ class Vehicle:
     def __init__(self, a1, a2, toff, doff, n, init):
         self.a1 = a1
         self.a2 = a2
-        self.toff = toff
-        self.doff = doff
         self.index = n
         self.init = init
+        self.toff = toff[0] if self.init[3] == 1 else toff[1]
+        self.doff = doff[0] if self.init[3] == 1 else doff[1]
         self.lp = None
         self.linit = None
         self.ps = []
         self.sinit = None
+        self.p = None
 
     # 返回给定轨迹和初始状态，在t时刻的位置和速度
     @staticmethod
@@ -73,7 +74,7 @@ class Vehicle:
                 eq = o[0] + o[1] * t + 0.5 * p[i][0] * t ** 2 - x
                 result = sympy.solve(eq)
                 for r in result:
-                    if 0 <= r < (p[i][2] - p[i][1]):
+                    if 0 <= r < (p[i][2] - p[i][1] + 10):
                         p2x = r + p[i][1]
                         return p2x
                     else:
@@ -86,8 +87,8 @@ class Vehicle:
     # Determining whether a backward shooting process is needed
     def needbackward(self, pf, green, L, H):
         needBSP = True
-        expectarrive = H + 5
         arrival = self.time2x(self.init, pf, L)
+        expectarrive = arrival
         for g in green:
             if g[0] <= arrival <= g[1]:
                 needBSP = False
@@ -95,6 +96,7 @@ class Vehicle:
             else:
                 continue
         if needBSP:
+            expectarrive = H + 10
             # Get the expected arrival time for this CAV
             for i in range(len(green)):
                 if arrival < green[i][0]:
@@ -102,6 +104,7 @@ class Vehicle:
                     break
                 else:
                     continue
+        # print('Index: ', self.index, 'Arrival: ', arrival, 'NeedBSP?', needBSP, 'Expect: ', expectarrive)
         return needBSP, expectarrive
 
     # 计算相切点
@@ -303,6 +306,8 @@ class Vehicle:
                         break
                     else:
                         continue
+
+        self.p = p
         return p
 
     # The SH algorithm for human-driven vehicles
@@ -381,6 +386,7 @@ class Vehicle:
                         continue
         else:
             pass
+        self.p = p
         return p
 
     # Backward merging for H_SH
