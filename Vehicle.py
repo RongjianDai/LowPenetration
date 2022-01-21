@@ -41,12 +41,6 @@ class Vehicle:
                 tstart = end
         return X
 
-    # 求解方程组
-    @staticmethod
-    def solver(eqs, variables):
-        result = sympy.solve(eqs, variables, dict=True)
-        return result
-
     # The shadow trajectory
     def shadow(self):
         lp = self.lp
@@ -70,6 +64,7 @@ class Vehicle:
         return t0 + t1 + t2
 
     def time2x(self, init, p, x):
+        p2x = 10000    # 为了意外情况无返回值，给一个初值
         for i in range(len(p)):
             o = self.locspeed(init, p, p[i][1])
             d = self.locspeed(init, p, p[i][2])
@@ -78,7 +73,7 @@ class Vehicle:
                 eq = o[0] + o[1] * t + 0.5 * p[i][0] * t ** 2 - x
                 result = sympy.solve(eq)
                 for r in result:
-                    if 0 <= r < p[i][2] - p[i][1]:
+                    if 0 <= r < (p[i][2] - p[i][1]):
                         p2x = r + p[i][1]
                         return p2x
                     else:
@@ -86,11 +81,12 @@ class Vehicle:
                 break
             else:
                 continue
+        return p2x
 
     # Determining whether a backward shooting process is needed
-    def needbackward(self, pf, green, L):
+    def needbackward(self, pf, green, L, H):
         needBSP = True
-        expectarrive = 80
+        expectarrive = H + 5
         arrival = self.time2x(self.init, pf, L)
         for g in green:
             if g[0] <= arrival <= g[1]:
@@ -127,11 +123,11 @@ class Vehicle:
                     0.5 * self.a2 * (tm - ts) ** 2 - xn_1 - vn_1 * (tm - tn_1) - 0.5 * an_1 * (tm - tn_1) ** 2
                 variables = [ts, tm]
                 eqs = [eq1, eq2]
-                result = self.solver(eqs, variables)
+                result = sympy.solve(eqs, variables, dict=True)
                 if len(result) == 0:
                     pass
                 elif len(result) == 1:
-                    print('result:', result)
+                    # print('result:', result)
                     ts, tm = result[0][ts], result[0][tm]
                     if 0 <= ts < tm:
                         if tn <= ts < seg[2] and tn_1 <= tm <= psseg[2]:
@@ -142,7 +138,7 @@ class Vehicle:
                     else:
                         pass
                 else:
-                    print('result:', result)
+                    # print('result:', result)
                     for r in result:
                         rts, rtm = r[ts], r[tm]
                         if 0 <= rts < rtm:
@@ -170,11 +166,11 @@ class Vehicle:
                   0.5 * self.a2 * (tm - ts) ** 2 - xstop
             variables = [ts, tm]
             eqs = [eq1, eq2]
-            result = self.solver(eqs, variables)
+            result = sympy.solve(eqs, variables, dict=True)
             if len(result) == 0:
                 pass
             elif len(result) == 1:
-                print('result:', result)
+                # print('result:', result)
                 ts, tm = result[0][ts], result[0][tm]
                 if 0 <= ts < tm:
                     if tn < ts <= fseg[2] and tm < (arrival - t0vmax):
@@ -185,7 +181,7 @@ class Vehicle:
                 else:
                     pass
             else:
-                print('result:', result)
+                # print('result:', result)
                 for r in result:
                     rts, rtm = r[ts], r[tm]
                     if 0 <= rts < rtm:
@@ -204,11 +200,11 @@ class Vehicle:
                               2 * self.a1)
             variables = [ts, tm]
             eqs = [eq1, eq2]
-            result = self.solver(eqs, variables)
+            result = sympy.solve(eqs, variables, dict=True)
             if len(result) == 0:
                 pass
             elif len(result) == 1:
-                print('result:', result)
+                # print('result:', result)
                 ts, tm = result[0][ts], result[0][tm]
                 if 0 <= ts < tm:
                     if tn < ts <= fseg[2] and tm < (arrival - t0vmax):
@@ -219,7 +215,7 @@ class Vehicle:
                 else:
                     pass
             else:
-                print('result:', result)
+                # print('result:', result)
                 for r in result:
                     rts, rtm = r[ts], r[tm]
                     if 0 <= rts < rtm:
@@ -233,8 +229,7 @@ class Vehicle:
         return ismerge, Ts, Tm
 
     # The SH algorithm for CAVs
-    def SH(self, green, L):
-        p = []  # [number of segments][3] list: [][0] 加速度；[][1] 开始时间；[][2] 结束时间；
+    def SH(self, green, L, H):
         # Forward shooting process
         pf = []
         if self.lp is None:  # This vehicle is the first one，then it will arrive at the intersection in the fasteast way
@@ -261,9 +256,9 @@ class Vehicle:
             pf.append([0, arrival, arrival + 10])  # 延长pf10s
             # 判断加速结束时刻是否会与安全边界相交
             selft2L = self.time2x(self.init, pf, L)
-            print('selft2L:', selft2L)
+            # print('selft2L:', selft2L)
             shadt2L = self.time2x(self.sinit, self.ps, L)
-            print('shadt2L:', shadt2L)
+            # print('shadt2L:', shadt2L)
             if selft2L >= shadt2L:  # 不相交，前向轨迹生成完毕
                 pass
             else:  # 相交需要求解merging segment
@@ -281,10 +276,9 @@ class Vehicle:
                     else:
                         continue
                 pass
-
         p = pf
         # Backward shooting process
-        needBSP, expectarrive = self.needbackward(pf, green, L)
+        needBSP, expectarrive = self.needbackward(pf, green, L, H)
         if needBSP:  # 需要BSP
             t0vmax = self.init[2] / self.a1
             for i in range(len(p)):
@@ -306,12 +300,13 @@ class Vehicle:
                         p.append([self.a2, Ts, Tm])
                         p.append([self.a1, Tm, expectarrive])
                         p.append([0, expectarrive, expectarrive + 10])
+                        break
+                    else:
+                        continue
         return p
 
     # The SH algorithm for human-driven vehicles
-    def H_SH(self, green, L):
-        p = []
-        # Forward shooting process
+    def H_SH(self, green, L, H):
         pf = []
         if self.lp is None:  # This vehicle is the first one，then it will arrive at the intersection in the fasteast way
             (t0, v0, vmax) = (self.init[0], self.init[1], self.init[2])
@@ -337,9 +332,9 @@ class Vehicle:
             pf.append([0, arrival, arrival + 10])  # 延长pf10s
             # 判断加速结束时刻是否会与安全边界相交
             selft2L = self.time2x(self.init, pf, L)
-            print('selft2L:', selft2L)
+            # print('selft2L:', selft2L)
             shadt2L = self.time2x(self.sinit, self.ps, L)
-            print('shadt2L:', shadt2L)
+            # print('shadt2L:', shadt2L)
             if selft2L >= shadt2L:  # 不相交，前向轨迹生成完毕
                 pass
             else:  # 相交需要求解merging segment
@@ -357,20 +352,107 @@ class Vehicle:
                     else:
                         continue
                 pass
-
         p = pf
         # Backward shooting process
-        needBSP, expectarrive = self.needbackward(pf, green, L)
+        needBSP, expectarrive = self.needbackward(pf, green, L, H)
         if needBSP:
             for i in range(len(p)):
                 seg = p[i]
-
+                ismerge, Ts, Tm, Vm = self.H_BSP(pf, 1, seg, L, expectarrive)
+                if ismerge:
+                    t0vmax = self.init[2] / self.a1
+                    p = p[0:i]  # 清除 i-1 之后的轨迹段
+                    p.append([seg[0], seg[1], Ts])
+                    p.append([self.a2, Ts, Tm])
+                    p.append([0, Tm, expectarrive])
+                    p.append([self.a1, expectarrive, (expectarrive + t0vmax)])
+                    break
+                else:
+                    ismerge, Ts, Tm, Vm = self.H_BSP(pf, 2, seg, L, expectarrive)
+                    if ismerge:
+                        t2vmax = (self.init[2] - Vm) / self.a1
+                        p = p[0:i]  # 清除 i-1 之后的轨迹段
+                        p.append([seg[0], seg[1], Ts])
+                        p.append([self.a2, Ts, expectarrive])
+                        p.append([self.a1, expectarrive, (expectarrive + t2vmax)])
+                        p.append([0, (expectarrive + t2vmax), (expectarrive + t2vmax + 2)])
+                        break
+                    else:
+                        continue
         else:
             pass
         return p
 
     # Backward merging for H_SH
     def H_BSP(self, pf, which, fseg, L, arrival):
-        ismerge, Ts, Tm = False, 0, 0
-        
-        return ismerge, Ts, Tm
+        ismerge, Ts, Tm, Vm = False, 0, 0, 0
+        an, tn = fseg[0], fseg[1]
+        selfX = self.locspeed(self.init, pf, tn)
+        xn, vn = selfX[0], selfX[1]
+        if which == 1:  # Need stop
+            (ts, tm) = (sympy.Symbol('ts', real=True), sympy.Symbol('tm', real=True))
+            eq1 = vn + an * (ts - tn) + self.a2 * (tm - ts)
+            eq2 = xn + vn * (ts - tn) + 0.5 * an * (ts - tn) ** 2 + (vn + an * (ts - tn)) * (tm - ts) + \
+                  0.5 * self.a2 * (tm - ts) ** 2 - L
+            variables = [ts, tm]
+            eqs = [eq1, eq2]
+            result = sympy.solve(eqs, variables, dict=True)
+            if len(result) == 0:
+                pass
+            elif len(result) == 1:
+                # print('result:', result)
+                ts, tm = result[0][ts], result[0][tm]
+                if 0 <= ts < tm:
+                    if tn < ts <= fseg[2] and tm < arrival:
+                        ismerge = True
+                        (Ts, Tm) = (ts, tm)
+                    else:
+                        pass
+                else:
+                    pass
+            else:
+                # print('result:', result)
+                for r in result:
+                    rts, rtm = r[ts], r[tm]
+                    if 0 <= rts < rtm:
+                        if tn < rts <= fseg[2] and rtm < arrival:
+                            ismerge = True
+                            (Ts, Tm) = (rts, rtm)
+                            break
+                    else:
+                        continue
+        else:  # Does not need stop
+            ts, vm = sympy.Symbol('ts', real=True), sympy.Symbol('vm', real=True)
+            eq1 = vn + an * (ts - tn) + self.a2 * (arrival - ts) - vm
+            eq2 = xn + vn * (ts - tn) + 0.5 * an * (ts - tn) ** 2 + (vn + an * (ts - tn)) * (arrival - ts) + \
+                  0.5 * self.a2 * (arrival - ts) ** 2 - L
+            variables = [ts, vm]
+            eqs = [eq1, eq2]
+            result = sympy.solve(eqs, variables, dict=True)
+            if len(result) == 0:
+                pass
+            elif len(result) == 1:
+                # print('result:', result)
+                ts, vm = result[0][ts], result[0][vm]
+                if 0 < vm < self.init[2]:
+                    if tn < ts <= fseg[2]:
+                        ismerge = True
+                        (Ts, Vm) = (ts, vm)
+                    else:
+                        pass
+                else:
+                    pass
+            else:
+                # print('result:', result)
+                for r in result:
+                    rts, rvm = r[ts], r[vm]
+                    if 0 < rvm < self.init[2]:
+                        if tn < ts <= fseg[2]:
+                            ismerge = True
+                            (Ts, Vm) = (rts, rvm)
+                        else:
+                            pass
+                    else:
+                        continue
+
+        return ismerge, Ts, Tm, Vm
