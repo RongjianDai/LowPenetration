@@ -6,7 +6,7 @@ Created on Date 2022-01-16
 """
 
 # Simulation parameters
-(T, H) = (900, 90)
+(T, H) = (200, 90)
 # 渗透率
 P = 0.2
 L = 300

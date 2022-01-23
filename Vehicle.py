@@ -90,7 +90,7 @@ class Vehicle:
         arrival = self.time2x(self.init, pf, L)
         expectarrive = arrival
         for g in green:
-            if g[0] <= arrival <= g[1]:
+            if g[0] - 0.1 <= arrival <= g[1]:
                 needBSP = False
                 break
             else:
@@ -131,7 +131,10 @@ class Vehicle:
                     pass
                 elif len(result) == 1:
                     # print('result:', result)
-                    ts, tm = result[0][ts], result[0][tm]
+                    if len(result[0]) == 2:
+                        ts, tm = result[0][ts], result[0][tm]
+                    else:
+                        ts, tm = -1, -1
                     if 0 <= ts < tm:
                         if tn <= ts < seg[2] and tn_1 <= tm <= psseg[2]:
                             ismerge = True
@@ -176,7 +179,7 @@ class Vehicle:
                 # print('result:', result)
                 ts, tm = result[0][ts], result[0][tm]
                 if 0 <= ts < tm:
-                    if tn < ts <= fseg[2] and tm < (arrival - t0vmax):
+                    if tn < ts <= fseg[2] and tm <= (arrival - t0vmax):
                         ismerge = True
                         (Ts, Tm) = (ts, tm)
                     else:
@@ -188,7 +191,7 @@ class Vehicle:
                 for r in result:
                     rts, rtm = r[ts], r[tm]
                     if 0 <= rts < rtm:
-                        if tn < rts <= fseg[2] and rtm < (arrival - t0vmax):
+                        if tn < rts <= fseg[2] and rtm <= (arrival - t0vmax):
                             ismerge = True
                             (Ts, Tm) = (rts, rtm)
                             break
@@ -197,10 +200,9 @@ class Vehicle:
         else:  # Accelerating segment
             vmax = self.init[2]
             (ts, tm) = (sympy.Symbol('ts', real=True), sympy.Symbol('tm', real=True))
-            eq1 = vn + an * (ts - tn) + self.a2 * (tm - ts) - vmax + self.a1 * (arrival - tm)
-            eq2 = xn + vn * (ts - tn) + 0.5 * an * (ts - tn) ** 2 + (vn + an * (ts - tn)) * (tm - ts) + \
-                  0.5 * self.a2 * (tm - ts) ** 2 - L + (vmax ** 2 - (vmax - self.a1 * (arrival - tm)) ** 2) / (
-                              2 * self.a1)
+            eq1 = vn + an * (ts - tn) + self.a2 * (tm - ts) + self.a1 * (arrival - tm) - vmax
+            eq2 = xn + vn * (ts - tn) + 0.5 * an * (ts - tn) ** 2 + (vn + an * (ts - tn)) * (tm - ts) + 0.5 * self.a2 * (tm - ts) ** 2 + \
+                (vmax - self.a1 * (arrival - tm)) * (arrival - tm) + 0.5 * self.a1 * (arrival - tm) ** 2
             variables = [ts, tm]
             eqs = [eq1, eq2]
             result = sympy.solve(eqs, variables, dict=True)
@@ -209,8 +211,8 @@ class Vehicle:
             elif len(result) == 1:
                 # print('result:', result)
                 ts, tm = result[0][ts], result[0][tm]
-                if 0 <= ts < tm:
-                    if tn < ts <= fseg[2] and tm < (arrival - t0vmax):
+                if 0 <= ts < tm and (tm - ts) <= - vmax / self.a2:
+                    if tn <= ts <= fseg[2] and tm <= (arrival - t0vmax):
                         ismerge = True
                         (Ts, Tm) = (ts, tm)
                     else:
@@ -221,8 +223,8 @@ class Vehicle:
                 # print('result:', result)
                 for r in result:
                     rts, rtm = r[ts], r[tm]
-                    if 0 <= rts < rtm:
-                        if tn < rts <= fseg[2] and rtm < (arrival - t0vmax):
+                    if 0 <= rts < rtm and (rtm - rts) <= - vmax / self.a2:
+                        if tn < rts <= fseg[2] and rtm <= (arrival - t0vmax):
                             ismerge = True
                             (Ts, Tm) = (rts, rtm)
                             break
@@ -246,17 +248,25 @@ class Vehicle:
         else:  # There is a preceding vehicle for this one
             # Get the safety boundary
             self.shadow()
-            # 判断初始时间是否符合要求，不符合需要修正
-            if self.init[0] >= self.sinit[0]:
+            # 判断初始时间是否符合要求，不符合需要修正，即可返回轨迹
+            if self.init[0] > self.sinit[0]:
                 pass
             else:
                 self.init[0] = self.sinit[0]
+                self.init[1] = self.sinit[1]
+                p = self.ps
+                return p
+
             (t0, v0, vmax) = (self.init[0], self.init[1], self.init[2])
             tvmax = t0 + (vmax - v0) / self.a1
             arrival = self.fastarrival(L)
-            pf.append([self.a1, t0, tvmax])
-            pf.append([0, tvmax, arrival])
-            pf.append([0, arrival, arrival + 10])  # 延长pf10s
+            if tvmax == t0:
+                pf.append([0, t0, arrival])
+                pf.append([0, arrival, arrival + 10])  # 延长pf10s
+            else:
+                pf.append([self.a1, t0, tvmax])
+                pf.append([0, tvmax, arrival])
+                pf.append([0, arrival, arrival + 10])  # 延长pf10s
             # 判断加速结束时刻是否会与安全边界相交
             selft2L = self.time2x(self.init, pf, L)
             # print('selft2L:', selft2L)
@@ -282,13 +292,14 @@ class Vehicle:
         p = pf
         # Backward shooting process
         needBSP, expectarrive = self.needbackward(pf, green, L, H)
+        print('isneeded:', needBSP)
         if needBSP:  # 需要BSP
             t0vmax = self.init[2] / self.a1
-            for i in range(len(p)):
-                seg = p[i]
+            for i in range(len(pf)):
+                seg = pf[i]
                 ismerge, Ts, Tm = self.backwardMerge(pf, 1, seg, L, expectarrive)
                 if ismerge:
-                    p = p[0:i]  # 清除 i-1 之后的轨迹段
+                    p = pf[0:i]  # 清除 i-1 之后的轨迹段
                     p.append([seg[0], seg[1], Ts])
                     p.append([self.a2, Ts, Tm])
                     p.append([0, Tm, expectarrive - t0vmax])
@@ -298,7 +309,7 @@ class Vehicle:
                 else:
                     ismerge, Ts, Tm = self.backwardMerge(pf, 2, seg, L, expectarrive)
                     if ismerge:
-                        p = p[0:i]  # 清除 i-1 之后的轨迹段
+                        p = pf[0:i]  # 清除 i-1 之后的轨迹段
                         p.append([seg[0], seg[1], Ts])
                         p.append([self.a2, Ts, Tm])
                         p.append([self.a1, Tm, expectarrive])
@@ -306,8 +317,8 @@ class Vehicle:
                         break
                     else:
                         continue
-
         self.p = p
+
         return p
 
     # The SH algorithm for human-driven vehicles
@@ -325,10 +336,14 @@ class Vehicle:
             # Get the safety boundary
             self.shadow()
             # 判断初始时间是否符合要求，不符合需要修正
-            if self.init[0] >= self.sinit[0]:
+            if self.init[0] > self.sinit[0]:
                 pass
             else:
                 self.init[0] = self.sinit[0]
+                self.init[1] = self.sinit[1]
+                p = self.ps
+                return p
+
             (t0, v0, vmax) = (self.init[0], self.init[1], self.init[2])
             tvmax = t0 + (vmax - v0) / self.a1
             arrival = self.fastarrival(L)
@@ -360,13 +375,14 @@ class Vehicle:
         p = pf
         # Backward shooting process
         needBSP, expectarrive = self.needbackward(pf, green, L, H)
+        print('isneeded:', needBSP)
         if needBSP:
-            for i in range(len(p)):
-                seg = p[i]
+            for i in range(len(pf)):
+                seg = pf[i]
                 ismerge, Ts, Tm, Vm = self.H_BSP(pf, 1, seg, L, expectarrive)
                 if ismerge:
                     t0vmax = self.init[2] / self.a1
-                    p = p[0:i]  # 清除 i-1 之后的轨迹段
+                    p = pf[0:i]  # 清除 i-1 之后的轨迹段
                     p.append([seg[0], seg[1], Ts])
                     p.append([self.a2, Ts, Tm])
                     p.append([0, Tm, expectarrive])
@@ -376,7 +392,7 @@ class Vehicle:
                     ismerge, Ts, Tm, Vm = self.H_BSP(pf, 2, seg, L, expectarrive)
                     if ismerge:
                         t2vmax = (self.init[2] - Vm) / self.a1
-                        p = p[0:i]  # 清除 i-1 之后的轨迹段
+                        p = pf[0:i]  # 清除 i-1 之后的轨迹段
                         p.append([seg[0], seg[1], Ts])
                         p.append([self.a2, Ts, expectarrive])
                         p.append([self.a1, expectarrive, (expectarrive + t2vmax)])
@@ -384,6 +400,7 @@ class Vehicle:
                         break
                     else:
                         continue
+
         else:
             pass
         self.p = p
@@ -453,7 +470,7 @@ class Vehicle:
                 for r in result:
                     rts, rvm = r[ts], r[vm]
                     if 0 < rvm < self.init[2]:
-                        if tn < ts <= fseg[2]:
+                        if tn < rts <= fseg[2]:
                             ismerge = True
                             (Ts, Vm) = (rts, rvm)
                         else:
