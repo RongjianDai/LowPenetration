@@ -8,7 +8,6 @@ Created on Date 2022-01-17
 import numpy as np
 import sympy
 import matplotlib.pyplot as plt
-from time import time
 
 
 class Vehicle:
@@ -126,15 +125,15 @@ class Vehicle:
             else:
                 # print('Forward shooting!')
                 tn_1, an_1, vn_1, xn_1 = psseg[1], psseg[0], shadX[1], shadX[0]
-                (ts, tm) = (sympy.Symbol('ts', real=True), sympy.Symbol('tm', real=True))
+                (ts, tm) = (sympy.Symbol('ts', real=True, positive=True), sympy.Symbol('tm', real=True, positive=True))
                 eq1 = vn + an * (ts - tn) + self.a2 * (tm - ts) - vn_1 - an_1 * (tm - tn_1)
                 eq2 = xn + vn * (ts - tn) + 0.5 * an * (ts - tn) ** 2 + (vn + an * (ts - tn)) * (tm - ts) + \
                     0.5 * self.a2 * (tm - ts) ** 2 - xn_1 - vn_1 * (tm - tn_1) - 0.5 * an_1 * (tm - tn_1) ** 2
                 variables = [ts, tm]
                 eqs = [eq1, eq2]
-                t = time()
-                result = sympy.solve(eqs, variables, dict=True)
-                print('result:', result)
+                # result = sympy.solve(eqs, variables, dict=True)
+                result = sympy.solve(eqs, variables, dict=True, rational=False)
+                print('result1:', result)
                 if len(result) == 0:
                     pass
                 elif len(result) == 1:
@@ -181,7 +180,7 @@ class Vehicle:
         else:
             pass
         if which == 1:  # Stop segment
-            (ts, tm) = (sympy.Symbol('ts', real=True), sympy.Symbol('tm', real=True))
+            (ts, tm) = (sympy.Symbol('ts', real=True, positive=True), sympy.Symbol('tm', real=True, positive=True))
             eq1 = vn + an * (ts - tn) + self.a2 * (tm - ts)
             eq2 = xn + vn * (ts - tn) + 0.5 * an * (ts - tn) ** 2 + (vn + an * (ts - tn)) * (tm - ts) + \
                   0.5 * self.a2 * (tm - ts) ** 2 - xstop
@@ -214,7 +213,7 @@ class Vehicle:
                         continue
         else:  # Accelerating segment
             vmax = self.init[2]
-            (ts, tm) = (sympy.Symbol('ts', real=True), sympy.Symbol('tm', real=True))
+            (ts, tm) = (sympy.Symbol('ts', real=True, positive=True), sympy.Symbol('tm', real=True, positive=True))
             eq1 = vn + an * (ts - tn) + self.a2 * (tm - ts) + self.a1 * (arrival - tm) - vmax
             eq2 = xn + vn * (ts - tn) + 0.5 * an * (ts - tn) ** 2 + (vn + an * (ts - tn)) * (tm - ts) + 0.5 * self.a2 * (tm - ts) ** 2 + \
                 (vmax - self.a1 * (arrival - tm)) * (arrival - tm) + 0.5 * self.a1 * (arrival - tm) ** 2 - L
@@ -435,7 +434,7 @@ class Vehicle:
         else:
             pass
         if which == 1:  # Need stop
-            (ts, tm) = (sympy.Symbol('ts', real=True), sympy.Symbol('tm', real=True))
+            (ts, tm) = (sympy.Symbol('ts', real=True, positive=True), sympy.Symbol('tm', real=True, positive=True))
             eq1 = vn + an * (ts - tn) + self.a2 * (tm - ts)
             eq2 = xn + vn * (ts - tn) + 0.5 * an * (ts - tn) ** 2 + (vn + an * (ts - tn)) * (tm - ts) + \
                   0.5 * self.a2 * (tm - ts) ** 2 - L
@@ -467,7 +466,7 @@ class Vehicle:
                     else:
                         continue
         else:  # Does not need stop
-            ts, vm = sympy.Symbol('ts', real=True), sympy.Symbol('vm', real=True)
+            ts, vm = sympy.Symbol('ts', real=True, positive=True), sympy.Symbol('vm', real=True, positive=True)
             eq1 = vn + an * (ts - tn) + self.a2 * (arrival - ts) - vm
             eq2 = xn + vn * (ts - tn) + 0.5 * an * (ts - tn) ** 2 + (vn + an * (ts - tn)) * (arrival - ts) + \
                   0.5 * self.a2 * (arrival - ts) ** 2 - L

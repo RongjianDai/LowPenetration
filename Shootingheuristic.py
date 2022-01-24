@@ -104,9 +104,12 @@ green = [[20, 40], [55, 75], [90, 105], [120, 140]]
 (a1, a2) = (2, -8)
 file = 'data\\InitialStates.xls'
 state = W_R_data.readinit(file)
-move = state[1][0:20]
-print(move)
-(P, platoon) = construction(move, green, a1, a2, L, H)
-plotTra(platoon, P, L, green, H)
+for i in range(16):
+    move = state[i][0:20]
+    print(move)
+    (P, platoon) = construction(move, green, a1, a2, L, H)
+    plotTra(platoon, P, L, green, H)
+
+
 
 
