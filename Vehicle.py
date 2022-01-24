@@ -8,6 +8,7 @@ Created on Date 2022-01-17
 import numpy as np
 import sympy
 import matplotlib.pyplot as plt
+from time import time
 
 
 class Vehicle:
@@ -115,10 +116,15 @@ class Vehicle:
         tn, an, vn, xn = seg[1], seg[0], selfX[1], selfX[0]
         for i in range(len(self.ps)):
             psseg = self.ps[i]
-            if tn > psseg[2]:
+            shadX = self.locspeed(self.sinit, self.ps, psseg[1])
+            # 判断是否可能，不可能继续下一段
+            segendX = self.locspeed(self.init, pf, seg[2])
+            if segendX[0] - segendX[1] ** 2 / (2 * self.a2) < shadX[0]:
+                continue
+            if tn > psseg[2] and seg[2] < psseg[1]:
                 continue
             else:
-                shadX = self.locspeed(self.sinit, self.ps, psseg[1])
+                # print('Forward shooting!')
                 tn_1, an_1, vn_1, xn_1 = psseg[1], psseg[0], shadX[1], shadX[0]
                 (ts, tm) = (sympy.Symbol('ts', real=True), sympy.Symbol('tm', real=True))
                 eq1 = vn + an * (ts - tn) + self.a2 * (tm - ts) - vn_1 - an_1 * (tm - tn_1)
@@ -126,7 +132,9 @@ class Vehicle:
                     0.5 * self.a2 * (tm - ts) ** 2 - xn_1 - vn_1 * (tm - tn_1) - 0.5 * an_1 * (tm - tn_1) ** 2
                 variables = [ts, tm]
                 eqs = [eq1, eq2]
+                t = time()
                 result = sympy.solve(eqs, variables, dict=True)
+                print('result:', result)
                 if len(result) == 0:
                     pass
                 elif len(result) == 1:
@@ -154,17 +162,24 @@ class Vehicle:
                                 whichps = i
                                 return ismerge, Ts, Tm, whichps
                         else:
-                            continue
+                            pass
         return ismerge, Ts, Tm, whichps
 
     # 计算backward shooting 的相切点
     def backwardMerge(self, pf, which, fseg, L, arrival):
+        # print('Backward shooting!')
         ismerge, Ts, Tm= False, 0, 0
         t0vmax = self.init[2] / self.a1
         xstop = L - self.init[2] ** 2 / (2 * self.a1)
         an, tn = fseg[0], fseg[1]
         selfX = self.locspeed(self.init, pf, tn)
         xn, vn = selfX[0], selfX[1]
+        # 判断是否可能，不可能直接返回
+        segendX = self.locspeed(self.init, pf, fseg[2])
+        if segendX[0] - segendX[1] ** 2 / (2 * self.a2) < xstop:
+            return ismerge, Ts, Tm
+        else:
+            pass
         if which == 1:  # Stop segment
             (ts, tm) = (sympy.Symbol('ts', real=True), sympy.Symbol('tm', real=True))
             eq1 = vn + an * (ts - tn) + self.a2 * (tm - ts)
@@ -408,10 +423,17 @@ class Vehicle:
 
     # Backward merging for H_SH
     def H_BSP(self, pf, which, fseg, L, arrival):
+        # print('HBackward shooting!')
         ismerge, Ts, Tm, Vm = False, 0, 0, 0
         an, tn = fseg[0], fseg[1]
         selfX = self.locspeed(self.init, pf, tn)
         xn, vn = selfX[0], selfX[1]
+        # 判断是否可能，不可能直接返回
+        segendX = self.locspeed(self.init, pf, fseg[2])
+        if segendX[0] - segendX[1] ** 2 / (2 * self.a2) < L:
+            return ismerge, Ts, Tm, Vm
+        else:
+            pass
         if which == 1:  # Need stop
             (ts, tm) = (sympy.Symbol('ts', real=True), sympy.Symbol('tm', real=True))
             eq1 = vn + an * (ts - tn) + self.a2 * (tm - ts)
