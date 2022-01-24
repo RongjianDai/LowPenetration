@@ -136,7 +136,7 @@ class Vehicle:
                     else:
                         ts, tm = -1, -1
                     if 0 <= ts < tm:
-                        if tn <= ts < seg[2] and tn_1 <= tm <= psseg[2]:
+                        if tn <= ts <= seg[2] and tn_1 <= tm <= psseg[2]:
                             ismerge = True
                             (Ts, Tm) = (ts, tm)
                             whichps = i
@@ -178,8 +178,8 @@ class Vehicle:
             elif len(result) == 1:
                 # print('result:', result)
                 ts, tm = result[0][ts], result[0][tm]
-                if 0 <= ts < tm:
-                    if tn < ts <= fseg[2] and tm <= (arrival - t0vmax):
+                if 0 <= ts < tm <= (arrival - t0vmax):
+                    if tn < ts <= fseg[2]:
                         ismerge = True
                         (Ts, Tm) = (ts, tm)
                     else:
@@ -190,8 +190,8 @@ class Vehicle:
                 # print('result:', result)
                 for r in result:
                     rts, rtm = r[ts], r[tm]
-                    if 0 <= rts < rtm:
-                        if tn < rts <= fseg[2] and rtm <= (arrival - t0vmax):
+                    if 0 <= rts < rtm <= (arrival - t0vmax):
+                        if tn < rts <= fseg[2]:
                             ismerge = True
                             (Ts, Tm) = (rts, rtm)
                             break
@@ -202,7 +202,7 @@ class Vehicle:
             (ts, tm) = (sympy.Symbol('ts', real=True), sympy.Symbol('tm', real=True))
             eq1 = vn + an * (ts - tn) + self.a2 * (tm - ts) + self.a1 * (arrival - tm) - vmax
             eq2 = xn + vn * (ts - tn) + 0.5 * an * (ts - tn) ** 2 + (vn + an * (ts - tn)) * (tm - ts) + 0.5 * self.a2 * (tm - ts) ** 2 + \
-                (vmax - self.a1 * (arrival - tm)) * (arrival - tm) + 0.5 * self.a1 * (arrival - tm) ** 2
+                (vmax - self.a1 * (arrival - tm)) * (arrival - tm) + 0.5 * self.a1 * (arrival - tm) ** 2 - L
             variables = [ts, tm]
             eqs = [eq1, eq2]
             result = sympy.solve(eqs, variables, dict=True)
@@ -211,8 +211,8 @@ class Vehicle:
             elif len(result) == 1:
                 # print('result:', result)
                 ts, tm = result[0][ts], result[0][tm]
-                if 0 <= ts < tm and (tm - ts) <= - vmax / self.a2:
-                    if tn <= ts <= fseg[2] and tm <= (arrival - t0vmax):
+                if 0 <= ts < tm <= arrival:
+                    if tn <= ts <= fseg[2] and tm >= (arrival - t0vmax):
                         ismerge = True
                         (Ts, Tm) = (ts, tm)
                     else:
@@ -223,8 +223,8 @@ class Vehicle:
                 # print('result:', result)
                 for r in result:
                     rts, rtm = r[ts], r[tm]
-                    if 0 <= rts < rtm and (rtm - rts) <= - vmax / self.a2:
-                        if tn < rts <= fseg[2] and rtm <= (arrival - t0vmax):
+                    if 0 <= rts < rtm <= arrival:
+                        if tn <= rts <= fseg[2] and rtm >= (arrival - t0vmax):
                             ismerge = True
                             (Ts, Tm) = (rts, rtm)
                             break
@@ -425,8 +425,8 @@ class Vehicle:
             elif len(result) == 1:
                 # print('result:', result)
                 ts, tm = result[0][ts], result[0][tm]
-                if 0 <= ts < tm:
-                    if tn < ts <= fseg[2] and tm < arrival:
+                if 0 <= ts < tm <= arrival:
+                    if tn <= ts <= fseg[2]:
                         ismerge = True
                         (Ts, Tm) = (ts, tm)
                     else:
@@ -437,8 +437,8 @@ class Vehicle:
                 # print('result:', result)
                 for r in result:
                     rts, rtm = r[ts], r[tm]
-                    if 0 <= rts < rtm:
-                        if tn < rts <= fseg[2] and rtm < arrival:
+                    if 0 <= rts < rtm <= arrival:
+                        if tn <= rts <= fseg[2]:
                             ismerge = True
                             (Ts, Tm) = (rts, rtm)
                             break
@@ -457,8 +457,8 @@ class Vehicle:
             elif len(result) == 1:
                 # print('result:', result)
                 ts, vm = result[0][ts], result[0][vm]
-                if 0 < vm < self.init[2]:
-                    if tn < ts <= fseg[2]:
+                if 0 <= vm <= self.init[2]:
+                    if tn <= ts <= fseg[2]:
                         ismerge = True
                         (Ts, Vm) = (ts, vm)
                     else:
@@ -469,8 +469,8 @@ class Vehicle:
                 # print('result:', result)
                 for r in result:
                     rts, rvm = r[ts], r[vm]
-                    if 0 < rvm < self.init[2]:
-                        if tn < rts <= fseg[2]:
+                    if 0 <= rvm <= self.init[2]:
+                        if tn <= rts <= fseg[2]:
                             ismerge = True
                             (Ts, Vm) = (rts, rvm)
                         else:

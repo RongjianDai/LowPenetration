@@ -24,20 +24,22 @@ def construction(state, signal, a1, a2, L, H):
         if n == 0:
             veh.linit = None
             veh.lp = None
+            print('第 0 辆：', veh.init)
             if veh.init[3] == 1:
                 p = veh.SH(signal, L, H)
             else:
                 p = veh.H_SH(signal, L, H)
-            print('第 0 辆：', p)
+            print('Tra：', p)
             P.append(p)
         else:
             veh.linit = platoon[n - 1].init
             veh.lp = P[n - 1]
+            print('第', n, '辆：', veh.init)
             if veh.init[3] == 1:
                 p = veh.SH(signal, L, H)
             else:
                 p = veh.H_SH(signal, L, H)
-            print('第', n, '辆：', p)
+            print('Tra：', p)
             # print('Its ps:', veh.ps)
             P.append(p)
     return P, platoon
@@ -102,10 +104,9 @@ green = [[20, 40], [55, 75], [90, 105], [120, 140]]
 (a1, a2) = (2, -8)
 file = 'data\\InitialStates.xls'
 state = W_R_data.readinit(file)
-move = state[15][0:20]
+move = state[14][0:20]
 print(move)
 (P, platoon) = construction(move, green, a1, a2, L, H)
 plotTra(platoon, P, L, green, H)
-
 
 

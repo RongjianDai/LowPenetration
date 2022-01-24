@@ -9,23 +9,24 @@ import numpy as np
 from Scenario import *
 import W_R_data
 from Vehicle import *
+import Supplymethods
 
 
-def DP(H, T, platoon, minG, clt, tstep, L):
+def DP(H, T, L, minG, clt, tstep, m2p, p2m, platoon):
     P = {}
-    signal = []
+    signal = {}
     c = 0
     first = [0] * 16
     while True:
         start, end = c * H, c * H + H
         # 识别本周期内考虑的车队
-        nowpla = considered(platoon, first, end, L)
-        print('This cycle: ')
+        nowpla = Supplymethods.considered(platoon, first, end, L)
+        print('Cycle: ', c)
         # 搜索最有信号配时方案
 
         # 记录本周期内的轨迹和信号
         # 记录需要在下周期考虑的车辆开始索引
-        first = recordlast(nowpla, end)
+        first = Supplymethods.recordlast(first, nowpla, end)
         print('First in next cycle: ', first)
         c += 1
         if c > T / H:
@@ -33,6 +34,61 @@ def DP(H, T, platoon, minG, clt, tstep, L):
         else:
             continue
     return P
+
+
+# 搜索最优信号配时
+def signaltiming(nowpla, minG, clt, tstep, H, c):
+    green = []
+    # Forward recursion
+    j = 0
+    stateset = np.arange(clt, H + 1, tstep)
+    funcJ = {}
+    optJX = {}
+    lastJ = 0
+    while True:
+        if j == 0:
+            optfuncS = {}
+            for sj in stateset:
+                Xsj = Supplymethods.feasibleX(minG, clt, tstep, sj)
+                valueX = {}
+                green = Supplymethods.greenintervals(c, j, 0, xj, H, clt)
+                valueX[xj] = trajectory(L, H, m2p, nowpla, green)
+                optx = Supplymethods.optX(valueX, Xsj)
+                optfuncS[sj] = valueX[optx]
+            funcJ[j] = optfuncS
+        else:
+            optfuncS = {}
+            for sj in stateset:
+                Xsj = Supplymethods.feasibleX(minG, clt, tstep, sj)
+                valueX = {}
+                for xj in Xsj:
+                    sj_1 = sj if xj == 0 else sj - xj - clt
+                    green = Supplymethods.greenintervals(c, j, sj_1, xj, H, clt)
+                    avertime = trajectory(L, H, m2p, nowpla, green)
+                    valueX[xj] = avertime + optfuncS[j - 1][sj_1]
+                optx = Supplymethods.optX(valueX, Xsj)
+                optfuncS[sj] = valueX[optx]
+            funcJ[j] = optfuncS
+        if j >= 4:
+            break
+        # if j > H / clt:
+        #     break
+        if (funcJ[j-1][H] - funcJ[j][H]) / funcJ[j-1][H] < 0.05:
+            break
+        j += 1
+    # Backward recursion
+
+    return green
+
+
+# 生成给定信号配时下得所有车辆的轨迹，以及对应的平均行程时间
+def trajectory(L, H, m2p, nowpla, signal):
+    traveltime = 0
+    for i in range(16):
+        p = m2p[i]
+        green = signal[p]
+
+    return traveltime
 
 
 # 生成所有车辆
@@ -46,63 +102,6 @@ def generation(init, a1, a2, toff, doff):
             move.append(veh)
         platoon[i] = move
     return platoon
-
-
-# 记录剩余车辆索引
-def recordlast(nowpla, end):
-    last = [None] * 16
-    for i in range(16):
-        pla = nowpla[i]
-        if len(pla) == 0:
-            pass
-        else:
-            for veh in pla:
-                if veh.fastarrival(300) > end:
-                # if veh.p[-1][1] > end:  # 本周期内无法到达
-                    last[i] = veh.index
-                    break
-                else:
-                    continue
-            # 若都能在本周期内到达，则记录最后一个车辆的index
-            last[i] = (pla[-1].index + 1) if last[i] is None else last[i]
-    return last
-
-
-# 识别每个周期内考虑的车队
-def considered(platoon, first, end, L):
-    nowpla = {}
-    for i in range(16):
-        if first[i] is None:
-            nowpla[i] = []
-        else:
-            move = platoon[i]
-            s, e = first[i], len(move) - 1
-            for veh in move:
-                fast = veh.fastarrival(L)
-                if fast > end:
-                    e = veh.index
-                    break
-                else:
-                    continue
-            nowpla[i] = move[s:e]
-
-    return nowpla
-
-
-# 生成给定信号配时下得所有车辆的轨迹，以及对应的平均行程时间
-def trajectory(platoon, signal, L, H):
-    traveltime = 0
-    for i in range(16):
-        if 0 <= i < 4:
-            phase = 0
-        elif 4 <= i < 8:
-            phase = 2
-        elif 8 <= i < 12:
-            phase = 1
-        else:
-            phase = 3
-
-    return traveltime
 
 
 # 主函数
