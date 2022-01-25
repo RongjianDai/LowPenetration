@@ -114,7 +114,6 @@ class Vehicle:
         selfX = self.locspeed(self.init, pf, seg[1])
         tn, an, vn, xn = seg[1], seg[0], selfX[1], selfX[0]
         for i in range(len(self.ps)):
-            print('第',i,'段ps')
             psseg = self.ps[i]
             shadX = self.locspeed(self.sinit, self.ps, psseg[1])
             # 判断是否可能，不可能继续下一段
@@ -136,11 +135,10 @@ class Vehicle:
                 variables = [ts, tm]
                 result = sympy.solve(eqs, variables, dict=True)
                 # result = sympy.solve(eqs, variables, dict=True, rational=False)
-                print('result:', result)
+                # print('result:', result)
                 if len(result) == 0:
                     pass
                 elif len(result) == 1:
-                    # print('result:', result)
                     if len(result[0]) == 2:
                         ts, tm = result[0][ts], result[0][tm]
                     else:
@@ -183,7 +181,7 @@ class Vehicle:
         else:
             pass
         if which == 1:  # Stop segment
-            (ts, tm) = (sympy.Symbol('ts', real=True, positive=True), sympy.Symbol('tm', real=True, positive=True))
+            ts, tm = sympy.symbols('ts tm', real=True, positive=True)
             eq1 = vn + an * (ts - tn) + self.a2 * (tm - ts)
             eq2 = xn + vn * (ts - tn) + 0.5 * an * (ts - tn) ** 2 + (vn + an * (ts - tn)) * (tm - ts) + \
                   0.5 * self.a2 * (tm - ts) ** 2 - xstop
@@ -216,7 +214,7 @@ class Vehicle:
                         continue
         else:  # Accelerating segment
             vmax = self.init[2]
-            (ts, tm) = (sympy.Symbol('ts', real=True, positive=True), sympy.Symbol('tm', real=True, positive=True))
+            ts, tm = sympy.symbols('ts tm', real=True, positive=True)
             eq1 = vn + an * (ts - tn) + self.a2 * (tm - ts) + self.a1 * (arrival - tm) - vmax
             eq2 = xn + vn * (ts - tn) + 0.5 * an * (ts - tn) ** 2 + (vn + an * (ts - tn)) * (tm - ts) + 0.5 * self.a2 * (tm - ts) ** 2 + \
                 (vmax - self.a1 * (arrival - tm)) * (arrival - tm) + 0.5 * self.a1 * (arrival - tm) ** 2 - L
@@ -293,7 +291,6 @@ class Vehicle:
                 pass
             else:  # 相交需要求解merging segment
                 for i in range(len(pf)):
-                    print('第',i,'段pf')
                     seg = pf[i]
                     ismerge, Ts, Tm, whichps = self.forwardMerge(pf, seg)
                     if ismerge:
@@ -377,7 +374,6 @@ class Vehicle:
                 pass
             else:  # 相交需要求解merging segment
                 for i in range(len(pf)):
-                    print('第', i, '段pf')
                     seg = pf[i]
                     ismerge, Ts, Tm, whichps = self.forwardMerge(pf, seg)
                     if ismerge:
@@ -439,7 +435,7 @@ class Vehicle:
         else:
             pass
         if which == 1:  # Need stop
-            (ts, tm) = (sympy.Symbol('ts', real=True, positive=True), sympy.Symbol('tm', real=True, positive=True))
+            ts, tm = sympy.symbols('ts tm', real=True, positive=True)
             eq1 = vn + an * (ts - tn) + self.a2 * (tm - ts)
             eq2 = xn + vn * (ts - tn) + 0.5 * an * (ts - tn) ** 2 + (vn + an * (ts - tn)) * (tm - ts) + \
                   0.5 * self.a2 * (tm - ts) ** 2 - L
@@ -471,7 +467,7 @@ class Vehicle:
                     else:
                         continue
         else:  # Does not need stop
-            ts, vm = sympy.Symbol('ts', real=True, positive=True), sympy.Symbol('vm', real=True, positive=True)
+            ts, vm = sympy.symbols('ts vm', real=True, positive=True)
             eq1 = vn + an * (ts - tn) + self.a2 * (arrival - ts) - vm
             eq2 = xn + vn * (ts - tn) + 0.5 * an * (ts - tn) ** 2 + (vn + an * (ts - tn)) * (arrival - ts) + \
                   0.5 * self.a2 * (arrival - ts) ** 2 - L
