@@ -114,6 +114,7 @@ class Vehicle:
         selfX = self.locspeed(self.init, pf, seg[1])
         tn, an, vn, xn = seg[1], seg[0], selfX[1], selfX[0]
         for i in range(len(self.ps)):
+            print('第',i,'段ps')
             psseg = self.ps[i]
             shadX = self.locspeed(self.sinit, self.ps, psseg[1])
             # 判断是否可能，不可能继续下一段
@@ -122,18 +123,20 @@ class Vehicle:
                 continue
             if tn > psseg[2] and seg[2] < psseg[1]:
                 continue
+            if segendX[1] <= shadX[1]:
+                continue
             else:
                 # print('Forward shooting!')
                 tn_1, an_1, vn_1, xn_1 = psseg[1], psseg[0], shadX[1], shadX[0]
-                (ts, tm) = (sympy.Symbol('ts', real=True, positive=True), sympy.Symbol('tm', real=True, positive=True))
+                ts, tm = sympy.symbols('ts tm', real=True, positive=True)
                 eq1 = vn + an * (ts - tn) + self.a2 * (tm - ts) - vn_1 - an_1 * (tm - tn_1)
                 eq2 = xn + vn * (ts - tn) + 0.5 * an * (ts - tn) ** 2 + (vn + an * (ts - tn)) * (tm - ts) + \
                     0.5 * self.a2 * (tm - ts) ** 2 - xn_1 - vn_1 * (tm - tn_1) - 0.5 * an_1 * (tm - tn_1) ** 2
-                variables = [ts, tm]
                 eqs = [eq1, eq2]
-                # result = sympy.solve(eqs, variables, dict=True)
-                result = sympy.solve(eqs, variables, dict=True, rational=False)
-                print('result1:', result)
+                variables = [ts, tm]
+                result = sympy.solve(eqs, variables, dict=True)
+                # result = sympy.solve(eqs, variables, dict=True, rational=False)
+                print('result:', result)
                 if len(result) == 0:
                     pass
                 elif len(result) == 1:
@@ -290,6 +293,7 @@ class Vehicle:
                 pass
             else:  # 相交需要求解merging segment
                 for i in range(len(pf)):
+                    print('第',i,'段pf')
                     seg = pf[i]
                     ismerge, Ts, Tm, whichps = self.forwardMerge(pf, seg)
                     if ismerge:
@@ -373,6 +377,7 @@ class Vehicle:
                 pass
             else:  # 相交需要求解merging segment
                 for i in range(len(pf)):
+                    print('第', i, '段pf')
                     seg = pf[i]
                     ismerge, Ts, Tm, whichps = self.forwardMerge(pf, seg)
                     if ismerge:

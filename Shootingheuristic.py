@@ -100,7 +100,7 @@ def plotTra(platoon, P, L, green, H):
 
 L = 300
 H = 90
-green = [[20, 40], [55, 75], [90, 105], [120, 140]]
+green = [[20, 40], [55, 75], [90, 105], [120, 140], [155, 175]]
 (a1, a2) = (2, -8)
 file = 'data\\InitialStates.xls'
 state = W_R_data.readinit(file)
