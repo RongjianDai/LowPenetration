@@ -13,7 +13,7 @@ import Supplymethods
 import Traveltime
 
 
-def DP(H, T, L, minG, clt, tstep, m2p, toff, doff):
+def DP(platoon):
     signal = {}
     c = 0
     first = [0] * 16
@@ -23,7 +23,7 @@ def DP(H, T, L, minG, clt, tstep, m2p, toff, doff):
         nowpla = Supplymethods.considered(platoon, first, end, L)
         # print('Cycle: ', c)
         # 搜索最有信号配时方案
-        signal[c] = signaltiming(nowpla, minG, clt, tstep, H, c, m2p, toff, doff)
+        signal[c] = signaltiming(nowpla, c)
         # 记录需要在下周期考虑的车辆开始索引
         first = Supplymethods.recordlast(first, nowpla, end)
         # print('First in next cycle: ', first)
@@ -36,7 +36,7 @@ def DP(H, T, L, minG, clt, tstep, m2p, toff, doff):
 
 
 # 搜索最优信号配时
-def signaltiming(state, minG, clt, tstep, H, c, m2p, toff, doff):
+def signaltiming(state, c):
     green = [[], [], [], []]
     # Forward recursion
     j = 0
@@ -111,13 +111,12 @@ def signaltiming(state, minG, clt, tstep, H, c, m2p, toff, doff):
 
 
 # 生成给定信号配时下得所有车辆的轨迹，以及对应的平均行程时间
-def trajectory(L, H, m2p, nowpla, signal):
-    traveltime = []
+def trajectory(platoon, signal):
     P = []
     for i in range(16):
         phase = m2p[i]
         green = signal[phase]
-        pla = nowpla[i]
+        pla = platoon[i]
         moveP = []
         for n in range(len(pla)):
             veh = pla[n]
@@ -131,8 +130,6 @@ def trajectory(L, H, m2p, nowpla, signal):
                     p = veh.H_SH(green, L, H)
                 print('Tra：', p)
                 moveP.append(p)
-                tratime = p[-1][1] - veh.init[0]
-                traveltime.append(tratime)
             else:
                 veh.linit = pla[n - 1].init
                 veh.lp = moveP[n - 1]
@@ -143,14 +140,13 @@ def trajectory(L, H, m2p, nowpla, signal):
                     p = veh.H_SH(green, L, H)
                 print('Tra：', p)
                 moveP.append(p)
-                tratime = p[-1][1] - veh.init[0]
-                traveltime.append(tratime)
+
         P.append(moveP)
-    return P, np.mean(traveltime)
+    return P
 
 
 # 生成所有车辆
-def generation(init, a1, a2, toff, doff):
+def generation(init):
     platoon = {}
     for i in range(16):
         move = []
@@ -166,6 +162,7 @@ def generation(init, a1, a2, toff, doff):
 if __name__ == "__main__":
     file = 'data\\InitialStates.xls'
     state = W_R_data.readinit(file)
-    platoon = generation(state, a1, a2, toff, doff)
-    green = DP(H, T, L, minG, clt, tstep, m2p, toff, doff)
-    print(green)
+    platoon = generation(state)
+    green = DP(platoon)
+    signal = Supplymethods.regulargreen(green, H)
+    P = trajectory(platoon, signal)

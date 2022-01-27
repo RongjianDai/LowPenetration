@@ -7,6 +7,7 @@ Created on Date 2022-01-23
 
 import numpy as np
 from Scenario import *
+import matplotlib.pyplot as plt
 
 
 # 记录剩余车辆索引
@@ -130,8 +131,71 @@ def optX(valueX):
     return optx
 
 
-# Get the optimal signal timing
-def retrivegreen(Xb):
+# 整理绿灯相位，用于车辆轨迹生成
+def regulargreen(signal, H):
     green = [[], [], [], []]
-
+    for c in signal.keys():
+        sigc = signal[c]
+        start = c * H
+        for i in range(4):
+            glist = sigc[i]
+            for g in glist:
+                if g[0] == g[1]:
+                    pass
+                else:
+                    rs, re = start + g[0], start + g[1]
+                    green[i].append([rs, re])
     return green
+
+
+# Function of location over time t
+def locationt(init, p, tlist):
+    x_t = []
+    for t in tlist:
+        (t0, v0) = (init[0], init[1])
+        (tstart, vstart, xstart) = (t0, v0, 0)
+        for i in range(len(p)):
+            (a, start, end) = (p[i][0], p[i][1], p[i][2])
+            if start <= t <= end:
+                x_t.append(xstart + vstart * (t - tstart) + 0.5 * a * (t - tstart) ** 2)
+                break
+            else:
+                xstart += vstart * (end - start) + 0.5 * a * (end - start) ** 2
+                vstart += a * (end - start)
+                tstart = end
+    return x_t
+
+
+# plot trajectories
+def plotTra(platoon, P, L, green, H):
+    fig, ax = plt.subplots()
+    # 绘制绿灯信号
+    for g in green:
+        clock = np.arange(g[0], g[1], 0.1)
+        y = np.ones_like(clock) + L
+        ax.plot(clock, y, color="green", linewidth=3)
+    # 绘制红灯信号
+    clock = np.arange(0, green[0][0], 0.1)
+    y = np.ones_like(clock) + L
+    ax.plot(clock, y, color="red", linewidth=3)
+    clock = np.arange(green[-1][1], H, 0.1)
+    y = np.ones_like(clock) + L
+    ax.plot(clock, y, color="red", linewidth=3)
+    for i in range(0, len(green) - 1):
+        clock = np.arange(green[i][1], green[i+1][0], 0.1)
+        y = np.ones_like(clock) + L
+        ax.plot(clock, y, color="red", linewidth=3)
+    for n in range(len(platoon)):
+        initn = platoon[n].init
+        pn = P[n]
+        s, e = pn[0][1], pn[-1][2]
+        tn = np.arange(s, e, 0.1)
+        x_t = locationt(initn, pn, tn)
+        ax.plot(tn, x_t)
+    ax.set_ylim(bottom=0, top=L + 20)
+    ax.set_xlim(left=0)
+    ax.set_xlabel('Time (s)', fontsize=12, fontname='Times New Roman')
+    ax.set_ylabel('Space (m)', fontsize=12, fontname='Times New Roman')
+    labels = ax.get_xticklabels() + ax.get_yticklabels()
+    [label.set_fontname('Times New Roman') for label in labels]
+    plt.show()

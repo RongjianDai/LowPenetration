@@ -7,7 +7,6 @@ Created on Date 2022-01-17
 
 import numpy as np
 import sympy
-import matplotlib.pyplot as plt
 
 
 class Vehicle:
@@ -113,28 +112,31 @@ class Vehicle:
         # 相切前一段开始时间，初始位置，初始速度及加速度
         selfX = self.locspeed(self.init, pf, seg[1])
         tn, an, vn, xn = seg[1], seg[0], selfX[1], selfX[0]
-        for i in range(len(self.ps)):
+        for i in range(len(self.ps) - 1):  # 最后附加段不必考虑，所以减去1
             psseg = self.ps[i]
             shadX = self.locspeed(self.sinit, self.ps, psseg[1])
+            tn_1, an_1, vn_1, xn_1 = psseg[1], psseg[0], shadX[1], shadX[0]
             # 判断是否可能，不可能继续下一段
             segendX = self.locspeed(self.init, pf, seg[2])
             if segendX[0] - segendX[1] ** 2 / (2 * self.a2) < shadX[0]:
                 continue
             if tn > psseg[2] and seg[2] < psseg[1]:
                 continue
-            if segendX[1] <= shadX[1]:
+            if segendX[1] <= shadX[1] or shadX[1] >= self.init[2]:
+                continue
+            if vn - vn_1 < 0.01 and an_1 == an == 0:
                 continue
             else:
                 # print('Forward shooting!')
-                tn_1, an_1, vn_1, xn_1 = psseg[1], psseg[0], shadX[1], shadX[0]
+                # print('第', i, '段ps:', psseg)
                 ts, tm = sympy.symbols('ts tm', real=True, positive=True)
                 eq1 = vn + an * (ts - tn) + self.a2 * (tm - ts) - vn_1 - an_1 * (tm - tn_1)
                 eq2 = xn + vn * (ts - tn) + 0.5 * an * (ts - tn) ** 2 + (vn + an * (ts - tn)) * (tm - ts) + \
                     0.5 * self.a2 * (tm - ts) ** 2 - xn_1 - vn_1 * (tm - tn_1) - 0.5 * an_1 * (tm - tn_1) ** 2
                 eqs = [eq1, eq2]
                 variables = [ts, tm]
-                # result = sympy.solve(eqs, variables, dict=True)
-                result = sympy.solve(eqs, variables, dict=True, rational=False)
+                result = sympy.solve(eqs, variables, dict=True)
+                # result = sympy.solve(eqs, variables, dict=True, rational=False)
                 # print('result:', result)
                 if len(result) == 0:
                     pass
@@ -290,8 +292,9 @@ class Vehicle:
             if selft2L >= shadt2L:  # 不相交，前向轨迹生成完毕
                 pass
             else:  # 相交需要求解merging segment
-                for i in range(len(pf)):
+                for i in range(len(pf) - 1):    # 不考虑最后附加段
                     seg = pf[i]
+                    print('第', i, '段pf:', seg)
                     ismerge, Ts, Tm, whichps = self.forwardMerge(pf, seg)
                     if ismerge:
                         pf = pf[0:i]  # 清除 i-1 之后的轨迹段
@@ -375,6 +378,7 @@ class Vehicle:
             else:  # 相交需要求解merging segment
                 for i in range(len(pf)):
                     seg = pf[i]
+                    print('第', i, '段pf:', seg)
                     ismerge, Ts, Tm, whichps = self.forwardMerge(pf, seg)
                     if ismerge:
                         pf = pf[0:i]  # 清除 i-1 之后的轨迹段
