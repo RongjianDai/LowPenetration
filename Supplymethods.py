@@ -52,33 +52,86 @@ def feasibleX(minG, clt, tstep, sj):
     if sj - clt < minG:
         X = np.array([0])
     else:
-        X = np.arange(0, sj - clt + 1, tstep)
+        X = np.arange(minG, sj - clt + 1, tstep)
+        X = np.insert(X, 0, 0)
     return X
 
 
-# Given sj_1, xj, get the green intervals for each phase
-def greenintervals(c, j, sj_1, xj, H, clt):
-    green = [[], [], [], []]
+# Green of phase 0
+def firstgreen(c, x0, clt, H):
     start, end = c * H, c * H + H
-    for i in range(4):
-        if i < j:
-            green[i] = [start, start + sj_1]
-        elif i == j:
-            green[i] = [start + sj_1, start + sj_1 + xj + clt]
-        else:
-            green[i] = [start + sj_1 + xj + clt, end]
+    if x0 != 0:
+        green = [[[start, start + x0]],
+                 [[start + x0 + clt, end]],
+                 [[start + x0 + clt, end]],
+                 [[start + x0 + clt, end]]]
+    else:
+        green = [[[start, start]],
+                 [[start, end]],
+                 [[start, end]],
+                 [[start, end]]]
     return green
 
 
+# Given sj_1, xj, get the green intervals for each phase
+def greenintervals(c, j, sj_1, xj, H, optJSX, clt):
+    green = [[], [], [], []]
+    start, end = c * H, c * H + H
+    p = j % 4
+    # print('j:', j, 'p:', p)
+    J = j - 1
+    sback = sj_1
+    while J >= 0:
+        ep = J % 4
+        optSX_1 = optJSX[J]
+        duration = optSX_1[sback] + clt if optSX_1[sback] != 0 else 0
+        if duration != 0:
+            green[ep].append([start + sback - duration, start + sback - clt])
+        else:
+            green[ep].append([start + sback, start + sback])
+        # print('Phase:', p, 'G: ', [start + sback - duration, start + sback])
+        sback -= duration
+        J -= 1
+
+    for i in range(4):
+        if i == p:
+            if xj == 0:
+                green[i].append([start + sj_1,  start + sj_1])
+            else:
+                green[i].append([start + sj_1, start + sj_1 + xj])
+        if i > p:
+            if xj == 0:
+                green[i].append([start + sj_1, end])
+            else:
+                green[i].append([start + sj_1 + xj + clt, end])
+
+    G = [[], [], [], []]
+    for i in range(4):
+        gp = green[i]
+        for k in range(len(gp)):
+            g = gp[k]
+            if g[0] == g[1]:
+                pass
+            else:
+                G[i].append(g)
+
+    # print('j:', j, 'sj_1:', sj_1, 'xj:', xj, 'Green:', G)
+    return G
+
+
 # Find the optimal control variable
-def optX(valueX, Xsj):
-    optx = Xsj[0]
-    for xj in Xsj:
+def optX(valueX):
+    optx = 0
+    for xj in valueX.keys():
         if valueX[xj] < valueX[optx]:
             optx = xj
         else:
             continue
     return optx
 
-green = greenintervals(0, 2, 40, 10, H, clt)
-print(green)
+
+# Get the optimal signal timing
+def retrivegreen(Xb):
+    green = [[], [], [], []]
+
+    return green

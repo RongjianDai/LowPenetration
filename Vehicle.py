@@ -90,7 +90,7 @@ class Vehicle:
         arrival = self.time2x(self.init, pf, L)
         expectarrive = arrival
         for g in green:
-            if g[0] - 0.1 <= arrival <= g[1]:
+            if g[0] <= arrival <= g[1]:
                 needBSP = False
                 break
             else:
@@ -133,8 +133,8 @@ class Vehicle:
                     0.5 * self.a2 * (tm - ts) ** 2 - xn_1 - vn_1 * (tm - tn_1) - 0.5 * an_1 * (tm - tn_1) ** 2
                 eqs = [eq1, eq2]
                 variables = [ts, tm]
-                result = sympy.solve(eqs, variables, dict=True)
-                # result = sympy.solve(eqs, variables, dict=True, rational=False)
+                # result = sympy.solve(eqs, variables, dict=True)
+                result = sympy.solve(eqs, variables, dict=True, rational=False)
                 # print('result:', result)
                 if len(result) == 0:
                     pass
@@ -307,7 +307,7 @@ class Vehicle:
         p = pf
         # Backward shooting process
         needBSP, expectarrive = self.needbackward(pf, green, L, H)
-        print('isneeded:', needBSP)
+        # print('isneeded:', needBSP)
         if needBSP:  # 需要BSP
             t0vmax = self.init[2] / self.a1
             for i in range(len(pf)):
@@ -390,7 +390,7 @@ class Vehicle:
         p = pf
         # Backward shooting process
         needBSP, expectarrive = self.needbackward(pf, green, L, H)
-        print('isneeded:', needBSP)
+        # print('isneeded:', needBSP)
         if needBSP:
             for i in range(len(pf)):
                 seg = pf[i]
