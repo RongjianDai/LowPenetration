@@ -215,7 +215,7 @@ def plotTra(platoon, P, L, green, T, clt, filename):
         s, e = pn[0][1], pn[-1][2]
         tn = np.arange(s, e, 0.1)
         x_t = locationt(initn, pn, tn)
-        ax.plot(tn, x_t)
+        ax.plot(tn, x_t, linewidth=1)
     ax.set_ylim(bottom=0, top=L + 20)
     ax.set_xlim(left=0)
     ax.set_xlabel('Time (s)', fontsize=12, fontname='Times New Roman')
