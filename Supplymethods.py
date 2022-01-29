@@ -145,6 +145,11 @@ def regulargreen(signal, H):
                 else:
                     rs, re = start + g[0], start + g[1]
                     green[i].append([rs, re])
+    for g in green:
+        for i in range(len(g) - 1):
+            for j in range(len(g) - i - 1):
+                if g[j][0] > g[j + 1][0]:
+                    g[j], g[j + 1] = g[j + 1], g[j]
     return green
 
 
@@ -167,22 +172,25 @@ def locationt(init, p, tlist):
 
 
 # plot trajectories
-def plotTra(platoon, P, L, green, H):
+def plotTra(platoon, P, L, green, T, clt):
     fig, ax = plt.subplots()
     # 绘制绿灯信号
     for g in green:
         clock = np.arange(g[0], g[1], 0.1)
         y = np.ones_like(clock) + L
         ax.plot(clock, y, color="green", linewidth=3)
+        clocky = np.arange(g[1], g[1] + clt, 0.1)
+        yy = np.ones_like(clocky) + L
+        ax.plot(clocky, yy, color="yellow", linewidth=3)
     # 绘制红灯信号
-    clock = np.arange(0, green[0][0], 0.1)
-    y = np.ones_like(clock) + L
-    ax.plot(clock, y, color="red", linewidth=3)
-    clock = np.arange(green[-1][1], H, 0.1)
-    y = np.ones_like(clock) + L
-    ax.plot(clock, y, color="red", linewidth=3)
+    clock1 = np.arange(0, green[0][0], 0.1)
+    y = np.ones_like(clock1) + L
+    ax.plot(clock1, y, color="red", linewidth=3)
+    clock2 = np.arange(green[-1][1] + clt, T, 0.1)
+    y = np.ones_like(clock2) + L
+    ax.plot(clock2, y, color="red", linewidth=3)
     for i in range(0, len(green) - 1):
-        clock = np.arange(green[i][1], green[i+1][0], 0.1)
+        clock = np.arange(green[i][1] + clt, green[i+1][0], 0.1)
         y = np.ones_like(clock) + L
         ax.plot(clock, y, color="red", linewidth=3)
     for n in range(len(platoon)):

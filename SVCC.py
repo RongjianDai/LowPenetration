@@ -158,6 +158,16 @@ def generation(init):
     return platoon
 
 
+# Plot the signal timing and vehicle trajectories
+def showtrajectory(platoon, P, signal):
+    for i in range(16):
+        mp = P[i]
+        pla = platoon[i]
+        phase = m2p[i]
+        green = signal[phase]
+        Supplymethods.plotTra(pla, mp, L, green, T, clt)
+
+
 # 主函数
 if __name__ == "__main__":
     file = 'data\\InitialStates.xls'
@@ -165,4 +175,7 @@ if __name__ == "__main__":
     platoon = generation(state)
     green = DP(platoon)
     signal = Supplymethods.regulargreen(green, H)
+    # print('signal:', signal)
     P = trajectory(platoon, signal)
+    showtrajectory(platoon, P, signal)
+

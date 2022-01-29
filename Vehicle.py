@@ -84,25 +84,53 @@ class Vehicle:
         return p2x
 
     # Determining whether a backward shooting process is needed
-    def needbackward(self, pf, green, L, H):
+    def needbackward(self, pf, green, L, T):
         needBSP = True
         arrival = self.time2x(self.init, pf, L)
         expectarrive = arrival
-        for g in green:
-            if g[0] <= arrival <= g[1]:
-                needBSP = False
-                break
-            else:
-                continue
-        if needBSP:
-            expectarrive = H + 10
-            # Get the expected arrival time for this CAV
-            for i in range(len(green)):
-                if arrival < green[i][0]:
-                    expectarrive = green[i][0]
+        if self.init[3] == 1 and self.linit is not None:  # 自车为CAV，前车为HV
+            if self.linit[3] == 0:
+                leadarrive = self.time2x(self.linit, self.lp, L)
+                initspeed = self.locspeed(self.linit, self.lp, leadarrive)
+                addtime = (self.init[2] - initspeed[1]) ** 2 / (2 * self.a1 * self.init[2]) + self.toff + self.doff / \
+                          self.init[2]
+                if arrival >= leadarrive + addtime:
+                    for g in green:
+                        if g[0] <= arrival <= g[1]:
+                            needBSP = False
+                            break
+                        else:
+                            continue
+                    if needBSP:
+                        expectarrive = T
+                        # Get the expected arrival time for this CAV
+                        for i in range(len(green)):
+                            if arrival < green[i][0]:
+                                expectarrive = green[i][0]
+                                break
+                            else:
+                                continue
+                else:
+                    expectarrive = leadarrive + addtime
+        else:
+            for g in green:
+                if g[0] <= arrival <= g[1]:
+                    needBSP = False
                     break
                 else:
                     continue
+
+            if needBSP:
+                expectarrive = T
+                # Get the expected arrival time for this CAV
+                for i in range(len(green)):
+                    if arrival < green[i][0]:
+                        expectarrive = green[i][0]
+                        break
+                    else:
+                        continue
+
+
         # print('Index: ', self.index, 'Arrival: ', arrival, 'NeedBSP?', needBSP, 'Expect: ', expectarrive)
         return needBSP, expectarrive
 
@@ -112,7 +140,7 @@ class Vehicle:
         # 相切前一段开始时间，初始位置，初始速度及加速度
         selfX = self.locspeed(self.init, pf, seg[1])
         tn, an, vn, xn = seg[1], seg[0], selfX[1], selfX[0]
-        for i in range(len(self.ps) - 1):  # 最后附加段不必考虑，所以减去1
+        for i in range(len(self.ps)):  # 最后附加段不必考虑，所以减去1
             psseg = self.ps[i]
             shadX = self.locspeed(self.sinit, self.ps, psseg[1])
             tn_1, an_1, vn_1, xn_1 = psseg[1], psseg[0], shadX[1], shadX[0]
@@ -251,7 +279,7 @@ class Vehicle:
         return ismerge, Ts, Tm
 
     # The SH algorithm for CAVs
-    def SH(self, green, L, H):
+    def SH(self, green, L, T):
         # Forward shooting process
         pf = []
         if self.lp is None:  # This vehicle is the first one，then it will arrive at the intersection in the fasteast way
@@ -292,9 +320,9 @@ class Vehicle:
             if selft2L >= shadt2L:  # 不相交，前向轨迹生成完毕
                 pass
             else:  # 相交需要求解merging segment
-                for i in range(len(pf) - 1):    # 不考虑最后附加段
+                for i in range(len(pf)):
                     seg = pf[i]
-                    print('第', i, '段pf:', seg)
+                    # print('第', i, '段pf:', seg)
                     ismerge, Ts, Tm, whichps = self.forwardMerge(pf, seg)
                     if ismerge:
                         pf = pf[0:i]  # 清除 i-1 之后的轨迹段
@@ -309,7 +337,7 @@ class Vehicle:
                 pass
         p = pf
         # Backward shooting process
-        needBSP, expectarrive = self.needbackward(pf, green, L, H)
+        needBSP, expectarrive = self.needbackward(pf, green, L, T)
         # print('isneeded:', needBSP)
         if needBSP:  # 需要BSP
             t0vmax = self.init[2] / self.a1
@@ -340,7 +368,7 @@ class Vehicle:
         return p
 
     # The SH algorithm for human-driven vehicles
-    def H_SH(self, green, L, H):
+    def H_SH(self, green, L, T):
         pf = []
         if self.lp is None:  # This vehicle is the first one，then it will arrive at the intersection in the fasteast way
             (t0, v0, vmax) = (self.init[0], self.init[1], self.init[2])
@@ -378,7 +406,7 @@ class Vehicle:
             else:  # 相交需要求解merging segment
                 for i in range(len(pf)):
                     seg = pf[i]
-                    print('第', i, '段pf:', seg)
+                    # print('第', i, '段pf:', seg)
                     ismerge, Ts, Tm, whichps = self.forwardMerge(pf, seg)
                     if ismerge:
                         pf = pf[0:i]  # 清除 i-1 之后的轨迹段
@@ -393,7 +421,7 @@ class Vehicle:
                 pass
         p = pf
         # Backward shooting process
-        needBSP, expectarrive = self.needbackward(pf, green, L, H)
+        needBSP, expectarrive = self.needbackward(pf, green, L, T)
         # print('isneeded:', needBSP)
         if needBSP:
             for i in range(len(pf)):
