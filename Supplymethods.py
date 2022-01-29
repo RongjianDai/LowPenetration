@@ -8,6 +8,7 @@ Created on Date 2022-01-23
 import numpy as np
 from Scenario import *
 import matplotlib.pyplot as plt
+import xlsxwriter
 
 
 # 记录剩余车辆索引
@@ -172,7 +173,7 @@ def locationt(init, p, tlist):
 
 
 # plot trajectories
-def plotTra(platoon, P, L, green, T, clt):
+def plotTra(platoon, P, L, green, T, clt, filename):
     fig, ax = plt.subplots()
     # 绘制绿灯信号
     for g in green:
@@ -206,4 +207,24 @@ def plotTra(platoon, P, L, green, T, clt):
     ax.set_ylabel('Space (m)', fontsize=12, fontname='Times New Roman')
     labels = ax.get_xticklabels() + ax.get_yticklabels()
     [label.set_fontname('Times New Roman') for label in labels]
+    plt.savefig(filename + ".png", dpi=600)
     plt.show()
+
+
+# Save the average travel time
+def savetraveltime(platoon, L):
+    filename = 'data\\traveltime.xlsx'
+    workbook = xlsxwriter.Workbook(filename)
+    sheet = workbook.add_worksheet('Travel time')
+    sheet.write(0, 0, 'Movement')
+    sheet.write(0, 1, 'Travel time')
+    for i in range(16):
+        pla = platoon[i]
+        traveltime = []
+        for veh in pla:
+            time = veh.time2x(veh.init, veh.p, L) - veh.init[0]
+            traveltime.append(time)
+        average = np.mean(traveltime)
+        sheet.write(i + 1, 0, i)
+        sheet.write_number(i + 1, 1, average)
+    workbook.close()

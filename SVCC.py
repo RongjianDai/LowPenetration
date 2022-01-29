@@ -165,7 +165,8 @@ def showtrajectory(platoon, P, signal):
         pla = platoon[i]
         phase = m2p[i]
         green = signal[phase]
-        Supplymethods.plotTra(pla, mp, L, green, T, clt)
+        filename = 'figure\\Movement' + str(i)
+        Supplymethods.plotTra(pla, mp, L, green, T, clt, filename)
 
 
 # 主函数
@@ -177,5 +178,6 @@ if __name__ == "__main__":
     signal = Supplymethods.regulargreen(green, H)
     # print('signal:', signal)
     P = trajectory(platoon, signal)
+    Supplymethods.savetraveltime(platoon, L)
     showtrajectory(platoon, P, signal)
 

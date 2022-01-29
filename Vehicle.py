@@ -88,12 +88,12 @@ class Vehicle:
         needBSP = True
         arrival = self.time2x(self.init, pf, L)
         expectarrive = arrival
-        if self.init[3] == 1 and self.linit is not None:  # 自车为CAV，前车为HV
-            if self.linit[3] == 0:
+        if self.init[3] == 1:
+            if self.linit is not None and self.linit[3] == 0:  # 自车为CAV，前车为HV
                 leadarrive = self.time2x(self.linit, self.lp, L)
                 initspeed = self.locspeed(self.linit, self.lp, leadarrive)
-                addtime = (self.init[2] - initspeed[1]) ** 2 / (2 * self.a1 * self.init[2]) + self.toff + self.doff / \
-                          self.init[2]
+                addtime = (self.init[2] - initspeed[1]) ** 2 / (
+                        2 * self.a1 * self.init[2]) + self.toff + self.doff / self.init[2]
                 if arrival >= leadarrive + addtime:
                     for g in green:
                         if g[0] <= arrival <= g[1]:
@@ -102,7 +102,6 @@ class Vehicle:
                         else:
                             continue
                     if needBSP:
-                        expectarrive = T
                         # Get the expected arrival time for this CAV
                         for i in range(len(green)):
                             if arrival < green[i][0]:
@@ -112,6 +111,22 @@ class Vehicle:
                                 continue
                 else:
                     expectarrive = leadarrive + addtime
+            else:
+                for g in green:
+                    if g[0] <= arrival <= g[1]:
+                        needBSP = False
+                        break
+                    else:
+                        continue
+
+                if needBSP:
+                    # Get the expected arrival time for this CAV
+                    for i in range(len(green)):
+                        if arrival < green[i][0]:
+                            expectarrive = green[i][0]
+                            break
+                        else:
+                            continue
         else:
             for g in green:
                 if g[0] <= arrival <= g[1]:
@@ -121,7 +136,6 @@ class Vehicle:
                     continue
 
             if needBSP:
-                expectarrive = T
                 # Get the expected arrival time for this CAV
                 for i in range(len(green)):
                     if arrival < green[i][0]:
@@ -130,8 +144,6 @@ class Vehicle:
                     else:
                         continue
 
-
-        # print('Index: ', self.index, 'Arrival: ', arrival, 'NeedBSP?', needBSP, 'Expect: ', expectarrive)
         return needBSP, expectarrive
 
     # 计算相切点
@@ -300,6 +312,7 @@ class Vehicle:
                 self.init[0] = self.sinit[0]
                 self.init[1] = self.sinit[1]
                 p = self.ps
+                self.p = p
                 return p
 
             (t0, v0, vmax) = (self.init[0], self.init[1], self.init[2])
@@ -388,6 +401,7 @@ class Vehicle:
                 self.init[0] = self.sinit[0]
                 self.init[1] = self.sinit[1]
                 p = self.ps
+                self.p = p
                 return p
 
             (t0, v0, vmax) = (self.init[0], self.init[1], self.init[2])
