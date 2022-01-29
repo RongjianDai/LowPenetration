@@ -133,7 +133,7 @@ def optX(valueX):
 
 
 # 整理绿灯相位，用于车辆轨迹生成
-def regulargreen(signal, H):
+def regulargreen(signal, H, clt):
     green = [[], [], [], []]
     for c in signal.keys():
         sigc = signal[c]
@@ -146,12 +146,27 @@ def regulargreen(signal, H):
                 else:
                     rs, re = start + g[0], start + g[1]
                     green[i].append([rs, re])
+    # 排序
     for g in green:
         for i in range(len(g) - 1):
             for j in range(len(g) - i - 1):
                 if g[j][0] > g[j + 1][0]:
                     g[j], g[j + 1] = g[j + 1], g[j]
-    return green
+    # 合并
+    Green = [[], [], [], []]
+    for i in range(4):
+        g = green[i]
+        num = len(g)
+        for j in range(1, num):
+            if g[j-1][1] + clt == g[j][0]:
+                Green[i].append([g[j-1][0], g[j][1]])
+            else:
+                Green[i].append([g[j-1][0], g[j-1][1]])
+        if g[num-2][1] + clt == g[num-1][0]:
+            pass
+        else:
+            Green[i].append([g[num-1][0], g[num-1][1]])
+    return Green
 
 
 # Function of location over time t
@@ -177,12 +192,12 @@ def plotTra(platoon, P, L, green, T, clt, filename):
     fig, ax = plt.subplots()
     # 绘制绿灯信号
     for g in green:
-        clock = np.arange(g[0], g[1] + clt, 0.1)
+        clock = np.arange(g[0], g[1], 0.1)
         y = np.ones_like(clock) + L
         ax.plot(clock, y, color="green", linewidth=3)
-        # clocky = np.arange(g[1], g[1] + clt, 0.1)
-        # yy = np.ones_like(clocky) + L
-        # ax.plot(clocky, yy, color="yellow", linewidth=3)
+        clocky = np.arange(g[1], g[1] + clt, 0.1)
+        yy = np.ones_like(clocky) + L
+        ax.plot(clocky, yy, color="yellow", linewidth=3)
     # 绘制红灯信号
     clock1 = np.arange(0, green[0][0], 0.1)
     y = np.ones_like(clock1) + L

@@ -53,6 +53,8 @@ class Vehicle:
                 self.ps.append([lp[i - 1][0], st0, (lp[i][1] + self.toff)])
                 for j in range(i, len(lp)):
                     self.ps.append([self.lp[j][0], (self.lp[j][1] + self.toff), (self.lp[j][2] + self.toff)])
+                last = self.ps[-1][2]
+                self.ps.append([0, last, last + 20])
                 break
 
     # The possible earliest arrival time
@@ -84,7 +86,7 @@ class Vehicle:
         return p2x
 
     # Determining whether a backward shooting process is needed
-    def needbackward(self, pf, green, L, T):
+    def needbackward(self, pf, green, L):
         needBSP = True
         arrival = self.time2x(self.init, pf, L)
         # arrival = pf[-1][1]
@@ -117,17 +119,12 @@ class Vehicle:
                     if g[0] <= arrival <= g[1]:
                         needBSP = False
                         break
-                    else:
-                        continue
-
                 if needBSP:
                     # Get the expected arrival time for this CAV
                     for i in range(len(green)):
                         if arrival < green[i][0]:
                             expectarrive = green[i][0]
                             break
-                        else:
-                            continue
         else:
             for g in green:
                 if g[0] <= arrival <= g[1]:
@@ -135,7 +132,6 @@ class Vehicle:
                     break
                 else:
                     continue
-
             if needBSP:
                 # Get the expected arrival time for this CAV
                 for i in range(len(green)):
@@ -351,7 +347,7 @@ class Vehicle:
                 pass
         p = pf
         # Backward shooting process
-        needBSP, expectarrive = self.needbackward(pf, green, L, T)
+        needBSP, expectarrive = self.needbackward(pf, green, L)
         # print('isneeded:', needBSP)
         if needBSP:  # 需要BSP
             t0vmax = self.init[2] / self.a1
@@ -436,7 +432,7 @@ class Vehicle:
                 pass
         p = pf
         # Backward shooting process
-        needBSP, expectarrive = self.needbackward(pf, green, L, T)
+        needBSP, expectarrive = self.needbackward(pf, green, L)
         # print('isneeded:', needBSP)
         if needBSP:
             for i in range(len(pf)):
