@@ -131,7 +131,7 @@ def optimization(Q, SF):
         for i in range(4):
             for j in range(4):
                 for k in range(4):
-                    fun[i][j][k] = l[i, j, k].X
+                    fun[i][j][k] = int(l[i, j, k].X)
 
     except gp.GurobiError as e:
         print('Error code' + ': ' + str(e))

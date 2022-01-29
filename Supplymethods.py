@@ -177,12 +177,12 @@ def plotTra(platoon, P, L, green, T, clt, filename):
     fig, ax = plt.subplots()
     # 绘制绿灯信号
     for g in green:
-        clock = np.arange(g[0], g[1], 0.1)
+        clock = np.arange(g[0], g[1] + clt, 0.1)
         y = np.ones_like(clock) + L
         ax.plot(clock, y, color="green", linewidth=3)
-        clocky = np.arange(g[1], g[1] + clt, 0.1)
-        yy = np.ones_like(clocky) + L
-        ax.plot(clocky, yy, color="yellow", linewidth=3)
+        # clocky = np.arange(g[1], g[1] + clt, 0.1)
+        # yy = np.ones_like(clocky) + L
+        # ax.plot(clocky, yy, color="yellow", linewidth=3)
     # 绘制红灯信号
     clock1 = np.arange(0, green[0][0], 0.1)
     y = np.ones_like(clock1) + L
@@ -212,19 +212,18 @@ def plotTra(platoon, P, L, green, T, clt, filename):
 
 
 # Save the average travel time
-def savetraveltime(platoon, L):
+def savetraveltime(P):
     filename = 'data\\traveltime.xlsx'
     workbook = xlsxwriter.Workbook(filename)
     sheet = workbook.add_worksheet('Travel time')
     sheet.write(0, 0, 'Movement')
     sheet.write(0, 1, 'Travel time')
     for i in range(16):
-        pla = platoon[i]
-        traveltime = []
-        for veh in pla:
-            time = veh.time2x(veh.init, veh.p, L) - veh.init[0]
-            traveltime.append(time)
-        average = np.mean(traveltime)
         sheet.write(i + 1, 0, i)
+        mp = P[i]
+        traveltime = []
+        for p in mp:
+            traveltime.append(p[-1][1] - p[0][1])
+        average = np.mean(traveltime)
         sheet.write_number(i + 1, 1, average)
     workbook.close()

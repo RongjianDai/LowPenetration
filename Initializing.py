@@ -22,7 +22,7 @@ sET = sat_ET(P, toff, doff)
 S = saturation(sET)
 # 供给向量表, [6][6][3]列表, 排列模式如图13
 supTab = supply(S, schemeset)
-
+# print(supTab)
 # 实时交通流量矩阵，字典：key为控制周期，item为流量矩阵
 QT = Qt(H, T, basicQ, slope)
 

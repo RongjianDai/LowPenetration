@@ -178,6 +178,6 @@ if __name__ == "__main__":
     signal = Supplymethods.regulargreen(green, H)
     # print('signal:', signal)
     P = trajectory(platoon, signal)
-    Supplymethods.savetraveltime(platoon, L)
+    Supplymethods.savetraveltime(P)
     showtrajectory(platoon, P, signal)
 

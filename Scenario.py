@@ -6,12 +6,12 @@ Created on Date 2022-01-16
 """
 
 # Simulation parameters
-(T, H) = (200, 60)
+(T, H) = (1200, 60)
 # 渗透率
 P = 0.2
 L = 300
 # 信号控制参数
-(minG, clt, tstep) = (6, 2, 1)
+(minG, clt, tstep) = (10, 2, 1)
 # 轨迹控制参数
 (a1, a2) = (2, -8)
 # 加速度折减系数

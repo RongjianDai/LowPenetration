@@ -64,11 +64,11 @@ class Vehicle:
         return t0 + t1 + t2
 
     def time2x(self, init, p, x):
-        p2x = 10000    # 为了意外情况无返回值，给一个初值
+        p2x = 1000    # 为了意外情况无返回值，给一个初值
         for i in range(len(p)):
             o = self.locspeed(init, p, p[i][1])
             d = self.locspeed(init, p, p[i][2])
-            if o[0] <= x < d[0]:
+            if o[0] <= x <= d[0]:
                 t = sympy.Symbol('t', real=True)
                 eq = o[0] + o[1] * t + 0.5 * p[i][0] * t ** 2 - x
                 result = sympy.solve(eq)
@@ -87,6 +87,7 @@ class Vehicle:
     def needbackward(self, pf, green, L, T):
         needBSP = True
         arrival = self.time2x(self.init, pf, L)
+        # arrival = pf[-1][1]
         expectarrive = arrival
         if self.init[3] == 1:
             if self.linit is not None and self.linit[3] == 0:  # 自车为CAV，前车为HV
@@ -301,7 +302,7 @@ class Vehicle:
             arrival = self.fastarrival(L)
             pf.append([self.a1, t0, tvmax])
             pf.append([0, tvmax, arrival])
-            pf.append([0, arrival, arrival + 10])  # 延长pf10s
+            pf.append([0, arrival, arrival + 20])  # 延长pf10s
         else:  # There is a preceding vehicle for this one
             # Get the safety boundary
             self.shadow()
@@ -320,11 +321,11 @@ class Vehicle:
             arrival = self.fastarrival(L)
             if tvmax == t0:
                 pf.append([0, t0, arrival])
-                pf.append([0, arrival, arrival + 10])  # 延长pf10s
+                pf.append([0, arrival, arrival + 20])  # 延长pf10s
             else:
                 pf.append([self.a1, t0, tvmax])
                 pf.append([0, tvmax, arrival])
-                pf.append([0, arrival, arrival + 10])  # 延长pf10s
+                pf.append([0, arrival, arrival + 20])  # 延长pf10s
             # 判断加速结束时刻是否会与安全边界相交
             selft2L = self.time2x(self.init, pf, L)
             # print('selft2L:', selft2L)
@@ -363,7 +364,7 @@ class Vehicle:
                     p.append([self.a2, Ts, Tm])
                     p.append([0, Tm, expectarrive - t0vmax])
                     p.append([self.a1, expectarrive - t0vmax, expectarrive])
-                    p.append([0, expectarrive, expectarrive + 10])
+                    p.append([0, expectarrive, expectarrive + 20])
                     break
                 else:
                     ismerge, Ts, Tm = self.backwardMerge(pf, 2, seg, L, expectarrive)
@@ -372,7 +373,7 @@ class Vehicle:
                         p.append([seg[0], seg[1], Ts])
                         p.append([self.a2, Ts, Tm])
                         p.append([self.a1, Tm, expectarrive])
-                        p.append([0, expectarrive, expectarrive + 10])
+                        p.append([0, expectarrive, expectarrive + 20])
                         break
                     else:
                         continue
@@ -390,7 +391,7 @@ class Vehicle:
             arrival = self.fastarrival(L)
             pf.append([self.a1, t0, tvmax])
             pf.append([0, tvmax, arrival])
-            pf.append([0, arrival, arrival + 10])  # 延长pf10s
+            pf.append([0, arrival, arrival + 20])  # 延长pf10s
         else:  # There is a preceding vehicle for this one
             # Get the safety boundary
             self.shadow()
@@ -409,7 +410,7 @@ class Vehicle:
             arrival = self.fastarrival(L)
             pf.append([self.a1, t0, tvmax])
             pf.append([0, tvmax, arrival])
-            pf.append([0, arrival, arrival + 10])  # 延长pf10s
+            pf.append([0, arrival, arrival + 20])  # 延长pf10s
             # 判断加速结束时刻是否会与安全边界相交
             selft2L = self.time2x(self.init, pf, L)
             # print('selft2L:', selft2L)
@@ -457,7 +458,7 @@ class Vehicle:
                         p.append([seg[0], seg[1], Ts])
                         p.append([self.a2, Ts, expectarrive])
                         p.append([self.a1, expectarrive, (expectarrive + t2vmax)])
-                        p.append([0, (expectarrive + t2vmax), (expectarrive + t2vmax + 2)])
+                        p.append([0, (expectarrive + t2vmax), (expectarrive + t2vmax + 5)])
                         break
                     else:
                         continue

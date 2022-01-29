@@ -19,7 +19,6 @@ def movements(entry, Scheme, turning, H):
         thmove = entry[thkey]
         rtmove = entry[rtkey]
         lanelevel = [[], [], [], []]
-        total = [0, 0, 0, 0]
         lastbir = [0, 0, 0, 0]
         moves = [ltmove, thmove, rtmove]
         turn = [lj, tj, rj]

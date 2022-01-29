@@ -16,6 +16,7 @@ def reoptLA(QT, marking, supTab, schemeset, turning):
     c = 0
     lascheme[0] = marking[0]
     armpattern[0] = lanepattern(lascheme[0], turning)
+    # print('armpattern[0]:', armpattern[0])
     while True:
         c += 1
         if c in QT.keys():
@@ -32,6 +33,8 @@ def reoptLA(QT, marking, supTab, schemeset, turning):
             elif c2 is True:   # 存在相似度更大的方案，需重新优化
                 lascheme[c] = marking[c]
                 optc.append(c)
+            else:
+                lascheme[c] = marking[lastc]
             # 给出对应arm pattern
             armpattern[c] = lanepattern(lascheme[c], turning)
         else:
@@ -64,6 +67,7 @@ def secondceritrion(optpat, nowQ, supTab, schemeset, turning):
         (lt, sa, rt) = (turning[i][0], turning[i][1], turning[i][2])
         nowdemv = np.array([nowQ[i][lt], nowQ[i][sa], nowQ[i][rt]])   # 当前demand vector
         nowindex = findindex(optpat[i], schemeset)      # LA模式索引
+        # print('optpat[i]:', optpat[i], 'nowindex:', nowindex)
         nowsupv = np.array(supTab[nowindex[0]][nowindex[1]])      # 当前supply vector
         nowsim = similarity(nowdemv, nowsupv)        # 当前相似度
         # 找出备选方案集合
@@ -115,16 +119,17 @@ def lanepattern(marking, turning):
             if marking[i][lt][k] == 1 and marking[i][sa][k] == 0:
                 scheme.append(1)
             # Arm i 上lane k 为: LT
-            elif marking[i][lt][k] == 1 and marking[i][sa][k] == 1:
+            if marking[i][lt][k] == 1 and marking[i][sa][k] == 1:
                 scheme.append(2)
             # Arm i 上lane k 为: ET
-            elif marking[i][sa][k] == 1 and marking[i][lt][k] == 0 and marking[i][rt][k] == 0:
+            if marking[i][sa][k] == 1 and marking[i][lt][k] == 0 and marking[i][rt][k] == 0:
                 scheme.append(3)
             # Arm i 上lane k 为: TR
-            elif marking[i][sa][k] == 1 and marking[i][rt][k] == 1:
+            if marking[i][sa][k] == 1 and marking[i][rt][k] == 1:
                 scheme.append(4)
-            # Arm i 上lane k 为: TR
-            else:
+            # Arm i 上lane k 为: ER
+            # print('marking[i][sa][k]:', marking[i][sa][k], 'marking[i][rt][k]:', marking[i][rt][k])
+            if marking[i][sa][k] == 0 and marking[i][rt][k] == 1:
                 scheme.append(5)
         schemes.append(scheme)
     return schemes
@@ -134,7 +139,7 @@ def lanepattern(marking, turning):
 def findindex(optpat, schemeset):
     for i in range(6):
         for j in range(6 - i):
-            if optpat[0] == schemeset[i][j][0] and optpat[1] == schemeset[i][j][1] and optpat[2] == schemeset[i][j][2]:
+            if optpat[0] == schemeset[i][j][0] and optpat[1] == schemeset[i][j][1] and optpat[2] == schemeset[i][j][2] and optpat[3] == schemeset[i][j][3]:
                 index = [i, j]
                 return index
             else:
