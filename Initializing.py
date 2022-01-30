@@ -10,6 +10,7 @@ from Setup import *
 import Reoptimize
 import W_R_data
 import Movements
+import copy
 
 
 # 交通流量变化率, [4][4]列表
@@ -32,11 +33,16 @@ QT = Qt(H, T, basicQ, slope)
 
 # 给出车辆初始状态信息，entry为字典，key为move; value 每辆车初始状态的列表
 entry = initialize(basicQ, slope, vmax, P, T)
+entry1 = copy.deepcopy(entry)
 # 将车辆组成16个lane-level movements
 initstate = Movements.movements(entry, Scheme, turning, H)
-
+inittradition = Movements.tramovements(entry1, Scheme, turning, H)
 # Save the initial states of vehicles for each lane-level movement as a .xls file
-W_R_data.saveinit(initstate)
+filename = 'data\\InitialStates.xls'
+W_R_data.saveinit(initstate, filename)
+# Fixed lane assignment
+filename1 = 'data\\TradInitialStates.xls'
+W_R_data.saveinit(inittradition, filename1)
 # Save the lane assignment schemes in each control cycle as a .csv file
 W_R_data.saveLA(lanegroup)
 

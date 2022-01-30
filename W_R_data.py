@@ -25,8 +25,7 @@ def saveLA(lanegroup):
 
 
 # 车辆初始状态存储, 输入参数：initstate
-def saveinit(initstate):
-    filename = 'data\\InitialStates.xls'
+def saveinit(initstate, filename):
     workbook = xlwt.Workbook()
     for arm in range(4):
         sheet = workbook.add_sheet('Arm' + str(arm))

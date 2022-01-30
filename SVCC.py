@@ -125,9 +125,9 @@ def trajectory(platoon, signal):
                 veh.lp = None
                 print('第 0 辆：', veh.init)
                 if veh.init[3] == 1:
-                    p = veh.SH(green, L, H)
+                    p = veh.SH(green, L)
                 else:
-                    p = veh.H_SH(green, L, H)
+                    p = veh.H_SH(green, L)
                 print('Tra：', p)
                 moveP.append(p)
             else:
@@ -135,9 +135,9 @@ def trajectory(platoon, signal):
                 veh.lp = moveP[n - 1]
                 print('第', n, '辆：', veh.init)
                 if veh.init[3] == 1:
-                    p = veh.SH(green, L, H)
+                    p = veh.SH(green, L)
                 else:
-                    p = veh.H_SH(green, L, H)
+                    p = veh.H_SH(green, L)
                 print('Tra：', p)
                 moveP.append(p)
 
@@ -159,19 +159,25 @@ def generation(init):
 
 
 # Plot the signal timing and vehicle trajectories
-def showtrajectory(platoon, P, signal):
+def showtrajectory(platoon, P, signal, folder):
     for i in range(16):
         mp = P[i]
         pla = platoon[i]
         phase = m2p[i]
         green = signal[phase]
-        filename = 'figure\\Movement' + str(i)
+        filename = folder + '\\Movement' + str(i)
         Supplymethods.plotTra(pla, mp, L, green, T, clt, filename)
 
 
 # 主函数
 if __name__ == "__main__":
-    file = 'data\\InitialStates.xls'
+    scenario = 0
+    if scenario == 0:
+        file = 'data\\InitialStates.xls'
+        folder = 'figure\\DLA'
+    else:
+        file = 'data\\TradInitialStates.xls'
+        folder = 'figure\\Fixed'
     state = W_R_data.readinit(file)
     platoon = generation(state)
     green = DP(platoon)
@@ -179,5 +185,5 @@ if __name__ == "__main__":
     print('signal:', signal)
     P = trajectory(platoon, signal)
     Supplymethods.savetraveltime(P)
-    showtrajectory(platoon, P, signal)
+    showtrajectory(platoon, P, signal, folder)
 

@@ -163,13 +163,12 @@ def supply(S, schemes):
 # 车道功能优化
 def lanemarking(QT, sET):
     """
-    :param T:
+    :param sET: 直行车道通行能力
     :param QT: 每个控制周期的流量矩阵
     :return:
     """
     marking = {}
     mulit = {}
-    armpattern = {}
     for (c, Q) in QT.items():
         # 优化LA
         (fun, u) = LA.optimization(Q, sET)

@@ -66,11 +66,11 @@ class Vehicle:
         return t0 + t1 + t2
 
     def time2x(self, init, p, x):
-        p2x = 1000    # 为了意外情况无返回值，给一个初值
+        p2x = 10000    # 为了意外情况无返回值，给一个初值
         for i in range(len(p)):
             o = self.locspeed(init, p, p[i][1])
             d = self.locspeed(init, p, p[i][2])
-            if o[0] <= x <= d[0]:
+            if o[0] < x <= d[0]:
                 t = sympy.Symbol('t', real=True)
                 eq = o[0] + o[1] * t + 0.5 * p[i][0] * t ** 2 - x
                 result = sympy.solve(eq)
@@ -80,7 +80,10 @@ class Vehicle:
                         return p2x
                     else:
                         pass
-                break
+                if p2x != 10000:
+                    break
+                else:
+                    continue
             else:
                 continue
         return p2x
@@ -91,40 +94,28 @@ class Vehicle:
         arrival = self.time2x(self.init, pf, L)
         # arrival = pf[-1][1]
         expectarrive = arrival
-        if self.init[3] == 1:
-            if self.linit is not None and self.linit[3] == 0:  # 自车为CAV，前车为HV
-                leadarrive = self.time2x(self.linit, self.lp, L)
-                initspeed = self.locspeed(self.linit, self.lp, leadarrive)
-                addtime = (self.init[2] - initspeed[1]) ** 2 / (
-                        2 * self.a1 * self.init[2]) + self.toff + self.doff / self.init[2]
-                if arrival >= leadarrive + addtime:
-                    for g in green:
-                        if g[0] <= arrival <= g[1]:
-                            needBSP = False
-                            break
-                        else:
-                            continue
-                    if needBSP:
-                        # Get the expected arrival time for this CAV
-                        for i in range(len(green)):
-                            if arrival < green[i][0]:
-                                expectarrive = green[i][0]
-                                break
-                            else:
-                                continue
-                else:
-                    expectarrive = leadarrive + addtime
-            else:
+        if self.init[3] == 1 and self.linit is not None and self.linit[3] == 0:  # 自车为CAV，前车为HV
+            leadarrive = self.time2x(self.linit, self.lp, L)
+            initspeed = self.locspeed(self.linit, self.lp, leadarrive)
+            addtime = (self.init[2] - initspeed[1]) ** 2 / (
+                    2 * self.a1 * self.init[2]) + self.toff + self.doff / self.init[2]
+            if arrival >= leadarrive + addtime:
                 for g in green:
                     if g[0] <= arrival <= g[1]:
                         needBSP = False
                         break
+                    else:
+                        continue
                 if needBSP:
                     # Get the expected arrival time for this CAV
                     for i in range(len(green)):
                         if arrival < green[i][0]:
                             expectarrive = green[i][0]
                             break
+                        else:
+                            continue
+            else:
+                expectarrive = leadarrive + addtime
         else:
             for g in green:
                 if g[0] <= arrival <= g[1]:
@@ -133,7 +124,7 @@ class Vehicle:
                 else:
                     continue
             if needBSP:
-                # Get the expected arrival time for this CAV
+                # Get the expected arrival time for this HV
                 for i in range(len(green)):
                     if arrival < green[i][0]:
                         expectarrive = green[i][0]
@@ -288,7 +279,7 @@ class Vehicle:
         return ismerge, Ts, Tm
 
     # The SH algorithm for CAVs
-    def SH(self, green, L, T):
+    def SH(self, green, L):
         # Forward shooting process
         pf = []
         if self.lp is None:  # This vehicle is the first one，then it will arrive at the intersection in the fasteast way
@@ -350,8 +341,9 @@ class Vehicle:
         needBSP, expectarrive = self.needbackward(pf, green, L)
         # print('isneeded:', needBSP)
         if needBSP:  # 需要BSP
+            print('expectarrive:', expectarrive)
             t0vmax = self.init[2] / self.a1
-            for i in range(len(pf)):
+            for i in range(1, len(pf)):
                 seg = pf[i]
                 ismerge, Ts, Tm = self.backwardMerge(pf, 1, seg, L, expectarrive)
                 if ismerge:
@@ -378,7 +370,7 @@ class Vehicle:
         return p
 
     # The SH algorithm for human-driven vehicles
-    def H_SH(self, green, L, T):
+    def H_SH(self, green, L):
         pf = []
         if self.lp is None:  # This vehicle is the first one，then it will arrive at the intersection in the fasteast way
             (t0, v0, vmax) = (self.init[0], self.init[1], self.init[2])
@@ -435,7 +427,8 @@ class Vehicle:
         needBSP, expectarrive = self.needbackward(pf, green, L)
         # print('isneeded:', needBSP)
         if needBSP:
-            for i in range(len(pf)):
+            print('expectarrive:', expectarrive)
+            for i in range(1, len(pf)):
                 seg = pf[i]
                 ismerge, Ts, Tm, Vm = self.H_BSP(pf, 1, seg, L, expectarrive)
                 if ismerge:
@@ -458,7 +451,6 @@ class Vehicle:
                         break
                     else:
                         continue
-
         else:
             pass
         self.p = p

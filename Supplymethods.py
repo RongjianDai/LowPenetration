@@ -141,7 +141,7 @@ def regulargreen(signal, H, clt):
         for i in range(4):
             glist = sigc[i]
             for g in glist:
-                if g[0] == g[1]:
+                if g[0] >= g[1]:
                     pass
                 else:
                     rs, re = start + g[0], start + g[1]
@@ -157,11 +157,15 @@ def regulargreen(signal, H, clt):
     for i in range(4):
         g = green[i]
         num = len(g)
-        for j in range(1, num):
+        j = 1
+        while j < num:
             if g[j-1][1] + clt == g[j][0]:
                 Green[i].append([g[j-1][0], g[j][1]])
+                j += 1
             else:
                 Green[i].append([g[j-1][0], g[j-1][1]])
+            j += 1
+
         if g[num-2][1] + clt == g[num-1][0]:
             pass
         else:
@@ -189,7 +193,7 @@ def locationt(init, p, tlist):
 
 # plot trajectories
 def plotTra(platoon, P, L, green, T, clt, filename):
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(12, 6))
     # 绘制绿灯信号
     for g in green:
         clock = np.arange(g[0], g[1], 0.1)
