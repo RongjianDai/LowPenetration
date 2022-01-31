@@ -177,3 +177,11 @@ def lanemarking(QT, sET):
     return marking, mulit
 
 
+# flow rate
+def flowrate(basicQ, flowfactor):
+    Q = basicQ
+    for i in range(4):
+        for j in range(4):
+            if j != i:
+                Q[i][j] = basicQ[i][j] * flowfactor
+    return Q

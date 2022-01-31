@@ -341,7 +341,7 @@ class Vehicle:
         needBSP, expectarrive = self.needbackward(pf, green, L)
         # print('isneeded:', needBSP)
         if needBSP:  # 需要BSP
-            print('expectarrive:', expectarrive)
+            # print('expectarrive:', expectarrive)
             t0vmax = self.init[2] / self.a1
             for i in range(1, len(pf)):
                 seg = pf[i]
@@ -427,7 +427,7 @@ class Vehicle:
         needBSP, expectarrive = self.needbackward(pf, green, L)
         # print('isneeded:', needBSP)
         if needBSP:
-            print('expectarrive:', expectarrive)
+            # print('expectarrive:', expectarrive)
             for i in range(1, len(pf)):
                 seg = pf[i]
                 ismerge, Ts, Tm, Vm = self.H_BSP(pf, 1, seg, L, expectarrive)

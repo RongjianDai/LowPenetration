@@ -171,7 +171,7 @@ def showtrajectory(platoon, P, signal, folder):
 
 # 主函数
 if __name__ == "__main__":
-    scenario = 0
+    scenario = 1
     if scenario == 0:
         file = 'data\\InitialStates.xls'
         folder = 'figure\\DLA'

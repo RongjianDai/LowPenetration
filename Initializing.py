@@ -13,9 +13,6 @@ import Movements
 import copy
 
 
-# 交通流量变化率, [4][4]列表
-slope = qvariation(turning, basicQ, T, vt)
-
 # 计算专用直行车道ET的通行能力
 sET = sat_ET(P, toff, doff)
 # 各种类型车道饱和流量
@@ -24,15 +21,18 @@ S = saturation(sET)
 # 供给向量表, [6][6][3]列表, 排列模式如图13
 supTab = supply(S, schemeset)
 # print(supTab)
+usedQ = flowrate(basicQ, flowfactor)
+# 交通流量变化率, [4][4]列表
+slope = qvariation(turning, usedQ, T, vt)
 # 实时交通流量矩阵，字典：key为控制周期，item为流量矩阵
-QT = Qt(H, T, basicQ, slope)
+QT = Qt(H, T, usedQ, slope)
 
 # 优化各周期的车道功能, marking和u均为字典，key为周期
 (marking, u) = lanemarking(QT, sET)
 (Scheme, lanegroup, optc) = Reoptimize.reoptLA(QT, marking, supTab, schemeset, turning)
 
 # 给出车辆初始状态信息，entry为字典，key为move; value 每辆车初始状态的列表
-entry = initialize(basicQ, slope, vmax, P, T)
+entry = initialize(usedQ, slope, vmax, P, T)
 entry1 = copy.deepcopy(entry)
 # 将车辆组成16个lane-level movements
 initstate = Movements.movements(entry, Scheme, turning, H)

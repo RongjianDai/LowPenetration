@@ -238,11 +238,13 @@ def plotTra(platoon, P, L, green, T, clt, filename):
 
 # Save the average travel time
 def savetraveltime(P, scenario):
-    filename = 'data\\traveltime.xlsx'
-    workbook = xlsxwriter.Workbook(filename)
     if scenario == 0:
+        filename = 'data\\DLATraveltime.xlsx'
+        workbook = xlsxwriter.Workbook(filename)
         sheet = workbook.add_worksheet('DLA')
     else:
+        filename = 'data\\FixedTraveltime.xlsx'
+        workbook = xlsxwriter.Workbook(filename)
         sheet = workbook.add_worksheet('Fixed')
     sheet.write(0, 0, 'Movement')
     sheet.write(0, 1, 'Travel time')
