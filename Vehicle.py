@@ -198,7 +198,7 @@ class Vehicle:
     # 计算backward shooting 的相切点
     def backwardMerge(self, pf, which, fseg, L, arrival):
         # print('Backward shooting!')
-        ismerge, Ts, Tm= False, 0, 0
+        ismerge, Ts, Tm = False, 0, 0
         t0vmax = self.init[2] / self.a1
         xstop = L - self.init[2] ** 2 / (2 * self.a1)
         an, tn = fseg[0], fseg[1]
@@ -211,37 +211,41 @@ class Vehicle:
         else:
             pass
         if which == 1:  # Stop segment
-            ts, tm = sympy.symbols('ts tm', real=True, positive=True)
-            eq1 = vn + an * (ts - tn) + self.a2 * (tm - ts)
-            eq2 = xn + vn * (ts - tn) + 0.5 * an * (ts - tn) ** 2 + (vn + an * (ts - tn)) * (tm - ts) + \
-                  0.5 * self.a2 * (tm - ts) ** 2 - xstop
-            variables = [ts, tm]
-            eqs = [eq1, eq2]
-            result = sympy.solve(eqs, variables, dict=True)
-            if len(result) == 0:
+            segstartX = self.locspeed(self.init, pf, fseg[1])
+            if segstartX[0] - segstartX[1] ** 2 / (2 * self.a2) >= xstop:
                 pass
-            elif len(result) == 1:
-                # print('result:', result)
-                ts, tm = result[0][ts], result[0][tm]
-                if 0 <= ts < tm <= (arrival - t0vmax):
-                    if tn < ts <= fseg[2]:
-                        ismerge = True
-                        (Ts, Tm) = (ts, tm)
+            else:
+                ts, tm = sympy.symbols('ts tm', real=True, positive=True)
+                eq1 = vn + an * (ts - tn) + self.a2 * (tm - ts)
+                eq2 = xn + vn * (ts - tn) + 0.5 * an * (ts - tn) ** 2 + (vn + an * (ts - tn)) * (tm - ts) + \
+                      0.5 * self.a2 * (tm - ts) ** 2 - xstop
+                variables = [ts, tm]
+                eqs = [eq1, eq2]
+                result = sympy.solve(eqs, variables, dict=True)
+                if len(result) == 0:
+                    pass
+                elif len(result) == 1:
+                    # print('result:', result)
+                    ts, tm = result[0][ts], result[0][tm]
+                    if 0 <= ts < tm <= (arrival - t0vmax):
+                        if tn < ts <= fseg[2]:
+                            ismerge = True
+                            (Ts, Tm) = (ts, tm)
+                        else:
+                            pass
                     else:
                         pass
                 else:
-                    pass
-            else:
-                # print('result:', result)
-                for r in result:
-                    rts, rtm = r[ts], r[tm]
-                    if 0 <= rts < rtm <= (arrival - t0vmax):
-                        if tn < rts <= fseg[2]:
-                            ismerge = True
-                            (Ts, Tm) = (rts, rtm)
-                            break
-                    else:
-                        continue
+                    # print('result:', result)
+                    for r in result:
+                        rts, rtm = r[ts], r[tm]
+                        if 0 <= rts < rtm <= (arrival - t0vmax):
+                            if tn < rts <= fseg[2]:
+                                ismerge = True
+                                (Ts, Tm) = (rts, rtm)
+                                break
+                        else:
+                            continue
         else:  # Accelerating segment
             vmax = self.init[2]
             ts, tm = sympy.symbols('ts tm', real=True, positive=True)
@@ -363,7 +367,6 @@ class Vehicle:
                     else:
                         continue
         self.p = p
-
         return p
 
     # The SH algorithm for human-driven vehicles
