@@ -184,6 +184,6 @@ if __name__ == "__main__":
     signal = Supplymethods.regulargreen(green, H, clt)
     print('signal:', signal)
     P = trajectory(platoon, signal)
-    Supplymethods.savetraveltime(P)
+    Supplymethods.savetraveltime(P, scenario)
     showtrajectory(platoon, P, signal, folder)
 

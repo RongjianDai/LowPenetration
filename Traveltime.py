@@ -40,11 +40,16 @@ def averagetime(nowpla, m2p, signal, L, H, toff, doff, c):
 # 不受前车影响时，判断是否绿灯能够通过，如不能给出期望通过时间
 def canpass(fast, green, H, c):
     exparrive = 0
+    can = False
     for i in range(len(green)):
         if green[i][0] <= fast <= green[i][1] and green[i][1] - green[i][0] > 0:
             exparrive = fast
+            can = True
             break
         else:
+            continue
+    if can is False:
+        for i in range(len(green)):
             if fast < green[i][0]:
                 exparrive = green[i][0]
                 break

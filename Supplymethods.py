@@ -103,9 +103,15 @@ def greenintervals(c, j, sj_1, xj, H, optJSX, clt):
                 green[i].append([start + sj_1, start + sj_1 + xj])
         if i > p:
             if xj == 0:
-                green[i].append([start + sj_1, end])
+                if start + sj_1 < end:
+                    green[i].append([start + sj_1, end])
+                else:
+                    green[i].append([end, end])
             else:
-                green[i].append([start + sj_1 + xj + clt, end])
+                if start + sj_1 + xj + clt < end:
+                    green[i].append([start + sj_1 + xj + clt, end])
+                else:
+                    green[i].append([end, end])
 
     G = [[], [], [], []]
     for i in range(4):
@@ -231,10 +237,13 @@ def plotTra(platoon, P, L, green, T, clt, filename):
 
 
 # Save the average travel time
-def savetraveltime(P):
+def savetraveltime(P, scenario):
     filename = 'data\\traveltime.xlsx'
     workbook = xlsxwriter.Workbook(filename)
-    sheet = workbook.add_worksheet('Travel time')
+    if scenario == 0:
+        sheet = workbook.add_worksheet('DLA')
+    else:
+        sheet = workbook.add_worksheet('Fixed')
     sheet.write(0, 0, 'Movement')
     sheet.write(0, 1, 'Travel time')
     for i in range(16):
