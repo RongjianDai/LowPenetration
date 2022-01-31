@@ -295,47 +295,44 @@ class Vehicle:
             self.shadow()
             # 判断初始时间是否符合要求，不符合需要修正，即可返回轨迹
             if self.init[0] > self.sinit[0]:
-                pass
+                (t0, v0, vmax) = (self.init[0], self.init[1], self.init[2])
+                tvmax = t0 + (vmax - v0) / self.a1
+                arrival = self.fastarrival(L)
+                if tvmax == t0:
+                    pf.append([0, t0, arrival])
+                    pf.append([0, arrival, arrival + 20])  # 延长pf10s
+                else:
+                    pf.append([self.a1, t0, tvmax])
+                    pf.append([0, tvmax, arrival])
+                    pf.append([0, arrival, arrival + 20])  # 延长pf10s
+                # 判断加速结束时刻是否会与安全边界相交
+                selft2L = self.time2x(self.init, pf, L)
+                # print('selft2L:', selft2L)
+                shadt2L = self.time2x(self.sinit, self.ps, L)
+                # print('shadt2L:', shadt2L)
+                if selft2L >= shadt2L:  # 不相交，前向轨迹生成完毕
+                    pass
+                else:  # 相交需要求解merging segment
+                    for i in range(len(pf)):
+                        seg = pf[i]
+                        # print('第', i, '段pf:', seg)
+                        ismerge, Ts, Tm, whichps = self.forwardMerge(pf, seg)
+                        if ismerge:
+                            pf = pf[0:i]  # 清除 i-1 之后的轨迹段
+                            pf.append([seg[0], seg[1], Ts])
+                            pf.append([self.a2, Ts, Tm])  # Merging segment
+                            pf.append([self.ps[whichps][0], Tm, self.ps[whichps][2]])  # 第一段紧密跟随轨迹
+                            for j in range(whichps + 1, len(self.ps)):
+                                pf.append(self.ps[j])
+                            break
+                        else:
+                            continue
+                    pass
             else:
                 self.init[0] = self.sinit[0]
                 self.init[1] = self.sinit[1]
-                p = self.ps
-                self.p = p
-                return p
+                pf = self.ps
 
-            (t0, v0, vmax) = (self.init[0], self.init[1], self.init[2])
-            tvmax = t0 + (vmax - v0) / self.a1
-            arrival = self.fastarrival(L)
-            if tvmax == t0:
-                pf.append([0, t0, arrival])
-                pf.append([0, arrival, arrival + 20])  # 延长pf10s
-            else:
-                pf.append([self.a1, t0, tvmax])
-                pf.append([0, tvmax, arrival])
-                pf.append([0, arrival, arrival + 20])  # 延长pf10s
-            # 判断加速结束时刻是否会与安全边界相交
-            selft2L = self.time2x(self.init, pf, L)
-            # print('selft2L:', selft2L)
-            shadt2L = self.time2x(self.sinit, self.ps, L)
-            # print('shadt2L:', shadt2L)
-            if selft2L >= shadt2L:  # 不相交，前向轨迹生成完毕
-                pass
-            else:  # 相交需要求解merging segment
-                for i in range(len(pf)):
-                    seg = pf[i]
-                    # print('第', i, '段pf:', seg)
-                    ismerge, Ts, Tm, whichps = self.forwardMerge(pf, seg)
-                    if ismerge:
-                        pf = pf[0:i]  # 清除 i-1 之后的轨迹段
-                        pf.append([seg[0], seg[1], Ts])
-                        pf.append([self.a2, Ts, Tm])  # Merging segment
-                        pf.append([self.ps[whichps][0], Tm, self.ps[whichps][2]])  # 第一段紧密跟随轨迹
-                        for j in range(whichps + 1, len(self.ps)):
-                            pf.append(self.ps[j])
-                        break
-                    else:
-                        continue
-                pass
         p = pf
         # Backward shooting process
         needBSP, expectarrive = self.needbackward(pf, green, L)
@@ -385,43 +382,40 @@ class Vehicle:
             self.shadow()
             # 判断初始时间是否符合要求，不符合需要修正
             if self.init[0] > self.sinit[0]:
-                pass
+                (t0, v0, vmax) = (self.init[0], self.init[1], self.init[2])
+                tvmax = t0 + (vmax - v0) / self.a1
+                arrival = self.fastarrival(L)
+                pf.append([self.a1, t0, tvmax])
+                pf.append([0, tvmax, arrival])
+                pf.append([0, arrival, arrival + 20])  # 延长pf10s
+                # 判断加速结束时刻是否会与安全边界相交
+                selft2L = self.time2x(self.init, pf, L)
+                # print('selft2L:', selft2L)
+                shadt2L = self.time2x(self.sinit, self.ps, L)
+                # print('shadt2L:', shadt2L)
+                if selft2L >= shadt2L:  # 不相交，前向轨迹生成完毕
+                    pass
+                else:  # 相交需要求解merging segment
+                    for i in range(len(pf)):
+                        seg = pf[i]
+                        # print('第', i, '段pf:', seg)
+                        ismerge, Ts, Tm, whichps = self.forwardMerge(pf, seg)
+                        if ismerge:
+                            pf = pf[0:i]  # 清除 i-1 之后的轨迹段
+                            pf.append([seg[0], seg[1], Ts])
+                            pf.append([self.a2, Ts, Tm])  # Merging segment
+                            pf.append([self.ps[whichps][0], Tm, self.ps[whichps][2]])  # 第一段紧密跟随轨迹
+                            for j in range(whichps + 1, len(self.ps)):
+                                pf.append(self.ps[j])
+                            break
+                        else:
+                            continue
+                    pass
             else:
                 self.init[0] = self.sinit[0]
                 self.init[1] = self.sinit[1]
-                p = self.ps
-                self.p = p
-                return p
+                pf = self.ps
 
-            (t0, v0, vmax) = (self.init[0], self.init[1], self.init[2])
-            tvmax = t0 + (vmax - v0) / self.a1
-            arrival = self.fastarrival(L)
-            pf.append([self.a1, t0, tvmax])
-            pf.append([0, tvmax, arrival])
-            pf.append([0, arrival, arrival + 20])  # 延长pf10s
-            # 判断加速结束时刻是否会与安全边界相交
-            selft2L = self.time2x(self.init, pf, L)
-            # print('selft2L:', selft2L)
-            shadt2L = self.time2x(self.sinit, self.ps, L)
-            # print('shadt2L:', shadt2L)
-            if selft2L >= shadt2L:  # 不相交，前向轨迹生成完毕
-                pass
-            else:  # 相交需要求解merging segment
-                for i in range(len(pf)):
-                    seg = pf[i]
-                    # print('第', i, '段pf:', seg)
-                    ismerge, Ts, Tm, whichps = self.forwardMerge(pf, seg)
-                    if ismerge:
-                        pf = pf[0:i]  # 清除 i-1 之后的轨迹段
-                        pf.append([seg[0], seg[1], Ts])
-                        pf.append([self.a2, Ts, Tm])  # Merging segment
-                        pf.append([self.ps[whichps][0], Tm, self.ps[whichps][2]])  # 第一段紧密跟随轨迹
-                        for j in range(whichps + 1, len(self.ps)):
-                            pf.append(self.ps[j])
-                        break
-                    else:
-                        continue
-                pass
         p = pf
         # Backward shooting process
         needBSP, expectarrive = self.needbackward(pf, green, L)
