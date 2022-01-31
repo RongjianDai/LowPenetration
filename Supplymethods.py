@@ -233,7 +233,7 @@ def plotTra(platoon, P, L, green, T, clt, filename):
     labels = ax.get_xticklabels() + ax.get_yticklabels()
     [label.set_fontname('Times New Roman') for label in labels]
     plt.savefig(filename + ".png", dpi=600)
-    plt.show()
+    # plt.show()
 
 
 # Save the average travel time

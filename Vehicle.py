@@ -89,11 +89,11 @@ class Vehicle:
         return p2x
 
     # Determining whether a backward shooting process is needed
-    def needbackward(self, pf, green, L):
+    def needbackward(self, pf, green, L, T):
         needBSP = True
         arrival = self.time2x(self.init, pf, L)
         # arrival = pf[-1][1]
-        expectarrive = arrival
+        expectarrive = T
         if self.init[3] == 1 and self.linit is not None and self.linit[3] == 0:  # 自车为CAV，前车为HV
             leadarrive = self.time2x(self.linit, self.lp, L)
             initspeed = self.locspeed(self.linit, self.lp, leadarrive)
@@ -279,7 +279,7 @@ class Vehicle:
         return ismerge, Ts, Tm
 
     # The SH algorithm for CAVs
-    def SH(self, green, L):
+    def SH(self, green, L, T):
         # Forward shooting process
         pf = []
         if self.lp is None:  # This vehicle is the first one，then it will arrive at the intersection in the fasteast way
@@ -335,7 +335,7 @@ class Vehicle:
 
         p = pf
         # Backward shooting process
-        needBSP, expectarrive = self.needbackward(pf, green, L)
+        needBSP, expectarrive = self.needbackward(pf, green, L, T)
         # print('isneeded:', needBSP)
         if needBSP:  # 需要BSP
             # print('expectarrive:', expectarrive)
@@ -367,7 +367,7 @@ class Vehicle:
         return p
 
     # The SH algorithm for human-driven vehicles
-    def H_SH(self, green, L):
+    def H_SH(self, green, L, T):
         pf = []
         if self.lp is None:  # This vehicle is the first one，then it will arrive at the intersection in the fasteast way
             (t0, v0, vmax) = (self.init[0], self.init[1], self.init[2])
@@ -418,7 +418,7 @@ class Vehicle:
 
         p = pf
         # Backward shooting process
-        needBSP, expectarrive = self.needbackward(pf, green, L)
+        needBSP, expectarrive = self.needbackward(pf, green, L, T)
         # print('isneeded:', needBSP)
         if needBSP:
             # print('expectarrive:', expectarrive)

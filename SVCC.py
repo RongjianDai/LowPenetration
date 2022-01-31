@@ -111,7 +111,7 @@ def signaltiming(state, c):
 
 
 # 生成给定信号配时下得所有车辆的轨迹，以及对应的平均行程时间
-def trajectory(platoon, signal):
+def trajectory(platoon, signal, T):
     P = []
     for i in range(16):
         phase = m2p[i]
@@ -125,9 +125,9 @@ def trajectory(platoon, signal):
                 veh.lp = None
                 print('第 0 辆：', veh.init)
                 if veh.init[3] == 1:
-                    p = veh.SH(green, L)
+                    p = veh.SH(green, L, T)
                 else:
-                    p = veh.H_SH(green, L)
+                    p = veh.H_SH(green, L, T)
                 print('Tra：', p)
                 moveP.append(p)
             else:
@@ -135,9 +135,9 @@ def trajectory(platoon, signal):
                 veh.lp = moveP[n - 1]
                 print('第', n, '辆：', veh.init)
                 if veh.init[3] == 1:
-                    p = veh.SH(green, L)
+                    p = veh.SH(green, L, T)
                 else:
-                    p = veh.H_SH(green, L)
+                    p = veh.H_SH(green, L, T)
                 print('Tra：', p)
                 moveP.append(p)
 
@@ -171,7 +171,7 @@ def showtrajectory(platoon, P, signal, folder):
 
 # 主函数
 if __name__ == "__main__":
-    scenario = 1
+    scenario = 0
     if scenario == 0:
         file = 'data\\InitialStates.xls'
         folder = 'figure\\DLA'
@@ -183,7 +183,7 @@ if __name__ == "__main__":
     green = DP(platoon)
     signal = Supplymethods.regulargreen(green, H, clt)
     print('signal:', signal)
-    P = trajectory(platoon, signal)
+    P = trajectory(platoon, signal, T)
     Supplymethods.savetraveltime(P, scenario)
     showtrajectory(platoon, P, signal, folder)
 
