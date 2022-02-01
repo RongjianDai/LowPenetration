@@ -12,7 +12,6 @@ from Vehicle import *
 def averagetime(nowpla, m2p, signal, L, H, toff, doff, c):
     traveltime = []
     for i in range(16):
-        mtravelT = []
         phase = m2p[i]
         # print('Phase:', phase)
         pla = nowpla[i]
@@ -28,7 +27,7 @@ def averagetime(nowpla, m2p, signal, L, H, toff, doff, c):
                     exparrive = canpass(fast, green, H, c)
                 # print('Fast:', fast, 'Expectarrival: ', exparrive)
                 arrival.append(exparrive)
-                mtravelT.append(exparrive - init[0])
+                traveltime.append(exparrive - init[0])
             else:
                 headway = (toff[0] + doff[0] / init[2]) if init[3] == 1 else (toff[1] + doff[1] / init[2])
                 leadarrive = arrival[n - 1]
@@ -39,19 +38,9 @@ def averagetime(nowpla, m2p, signal, L, H, toff, doff, c):
                     exparrive = canpass(mayarrive, green, H, c)
                 # print('Fast:', fast, 'Expectarrival: ', exparrive)
                 arrival.append(exparrive)
-                mtravelT.append(exparrive - init[0])
+                traveltime.append(exparrive - init[0])
 
-        traveltime.append(mtravelT)
-
-    num, total = 0, 0
-    for i in range(16):
-        num += len(traveltime[i])
-        total += sum(traveltime[i])
-
-    if num == 0:
-        return 0
-    else:
-        return total / num
+    return np.mean(traveltime)
 
 
 # 不受前车影响时，判断是否绿灯能够通过，如不能给出期望通过时间
