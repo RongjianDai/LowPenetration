@@ -93,6 +93,9 @@ class Vehicle:
         needBSP = True
         arrival = self.time2x(self.init, pf, L)
         # arrival = pf[-1][1]
+        if self.init[2] == 12:   # 右转车辆不需要BSP
+            needBSP = False
+            return needBSP, arrival
         expectarrive = T
         if self.init[3] == 1 and self.linit is not None and self.linit[3] == 0:  # 自车为CAV，前车为HV
             leadarrive = self.time2x(self.linit, self.lp, L)

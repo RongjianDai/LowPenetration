@@ -171,19 +171,20 @@ def showtrajectory(platoon, P, signal, folder):
 
 # 主函数
 if __name__ == "__main__":
-    scenario = 0
-    if scenario == 0:
-        file = 'data\\InitialStates.xls'
-        folder = 'figure\\DLA'
-    else:
-        file = 'data\\TradInitialStates.xls'
-        folder = 'figure\\Fixed'
-    state = W_R_data.readinit(file)
-    platoon = generation(state)
-    green = DP(platoon)
-    signal = Supplymethods.regulargreen(green, H, clt)
-    print('signal:', signal)
-    P = trajectory(platoon, signal, T)
-    Supplymethods.savetraveltime(P, scenario)
-    showtrajectory(platoon, P, signal, folder)
+    # scenario = 0
+    for scenario in range(2):
+        if scenario == 0:
+            file = 'data\\InitialStates.xls'
+            folder = 'figure\\DLA'
+        else:
+            file = 'data\\TradInitialStates.xls'
+            folder = 'figure\\Fixed'
+        state = W_R_data.readinit(file)
+        platoon = generation(state)
+        green = DP(platoon)
+        signal = Supplymethods.regulargreen(green, H, clt)
+        print('signal:', signal)
+        P = trajectory(platoon, signal, T)
+        Supplymethods.savetraveltime(P, scenario)
+        showtrajectory(platoon, P, signal, folder)
 

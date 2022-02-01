@@ -202,28 +202,28 @@ def plotTra(platoon, P, L, green, T, clt, filename):
     fig, ax = plt.subplots(figsize=(12, 6))
     # 绘制绿灯信号
     for g in green:
-        clock = np.arange(g[0], g[1], 0.1)
+        clock = np.arange(g[0], g[1], 0.2)
         y = np.ones_like(clock) + L
         ax.plot(clock, y, color="green", linewidth=3)
-        clocky = np.arange(g[1], g[1] + clt, 0.1)
+        clocky = np.arange(g[1], g[1] + clt, 0.2)
         yy = np.ones_like(clocky) + L
         ax.plot(clocky, yy, color="yellow", linewidth=3)
     # 绘制红灯信号
-    clock1 = np.arange(0, green[0][0], 0.1)
+    clock1 = np.arange(0, green[0][0], 0.2)
     y = np.ones_like(clock1) + L
     ax.plot(clock1, y, color="red", linewidth=3)
-    clock2 = np.arange(green[-1][1] + clt, T, 0.1)
+    clock2 = np.arange(green[-1][1] + clt, T, 0.2)
     y = np.ones_like(clock2) + L
     ax.plot(clock2, y, color="red", linewidth=3)
     for i in range(0, len(green) - 1):
-        clock = np.arange(green[i][1] + clt, green[i+1][0], 0.1)
+        clock = np.arange(green[i][1] + clt, green[i+1][0], 0.2)
         y = np.ones_like(clock) + L
         ax.plot(clock, y, color="red", linewidth=3)
     for n in range(len(platoon)):
         initn = platoon[n].init
         pn = P[n]
         s, e = pn[0][1], pn[-1][2]
-        tn = np.arange(s, e, 0.1)
+        tn = np.arange(s, e, 0.2)
         x_t = locationt(initn, pn, tn)
         ax.plot(tn, x_t, linewidth=1)
     ax.set_ylim(bottom=0, top=L + 20)
@@ -234,6 +234,7 @@ def plotTra(platoon, P, L, green, T, clt, filename):
     [label.set_fontname('Times New Roman') for label in labels]
     plt.savefig(filename + ".png", dpi=600)
     # plt.show()
+    plt.close(fig)
 
 
 # Save the average travel time
