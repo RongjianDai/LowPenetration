@@ -21,7 +21,10 @@ def averagetime(nowpla, m2p, signal, L, H, toff, doff, c):
             init = pla[n].init
             fast = fastarrival(init, L, pla[n].a1)
             if n == 0:
-                exparrive = canpass(fast, green, H, c)
+                if init[2] == 12:
+                    exparrive = fast
+                else:
+                    exparrive = canpass(fast, green, H, c)
                 # print('Fast:', fast, 'Expectarrival: ', exparrive)
                 arrival.append(exparrive)
                 traveltime.append(exparrive - init[0])
@@ -29,7 +32,10 @@ def averagetime(nowpla, m2p, signal, L, H, toff, doff, c):
                 headway = (toff[0] + doff[0] / init[2]) if init[3] == 1 else (toff[1] + doff[1] / init[2])
                 leadarrive = arrival[n - 1]
                 mayarrive = leadarrive + headway if fast < leadarrive + headway else fast
-                exparrive = canpass(mayarrive, green, H, c)
+                if init[2] == 12:
+                    exparrive = mayarrive
+                else:
+                    exparrive = canpass(mayarrive, green, H, c)
                 # print('Fast:', fast, 'Expectarrival: ', exparrive)
                 arrival.append(exparrive)
                 traveltime.append(exparrive - init[0])
