@@ -249,6 +249,7 @@ def savetraveltime(P, scenario):
         sheet = workbook.add_worksheet('Fixed')
     sheet.write(0, 0, 'Movement')
     sheet.write(0, 1, 'Travel time')
+    sheet.write(0, 2, 'Number')
     for i in range(16):
         sheet.write(i + 1, 0, i)
         mp = P[i]
@@ -256,5 +257,7 @@ def savetraveltime(P, scenario):
         for p in mp:
             traveltime.append(p[-1][1] - p[0][1])
         average = np.mean(traveltime)
+        vehnum = len(traveltime)
         sheet.write_number(i + 1, 1, average)
+        sheet.write_number(i + 1, 2, vehnum)
     workbook.close()
