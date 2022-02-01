@@ -27,7 +27,7 @@ def averagetime(nowpla, m2p, signal, L, H, toff, doff, c):
                     exparrive = canpass(fast, green, H, c)
                 # print('Fast:', fast, 'Expectarrival: ', exparrive)
                 arrival.append(exparrive)
-                delay.append(exparrive - init[0] - fast)
+                delay.append(exparrive - init[0] - (fast - init[0]))
             else:
                 headway = (toff[0] + doff[0] / init[2]) if init[3] == 1 else (toff[1] + doff[1] / init[2])
                 leadarrive = arrival[n - 1]
