@@ -30,7 +30,8 @@ QT = Qt(H, T, usedQ, slope)
 # 优化各周期的车道功能, marking和u均为字典，key为周期
 (marking, u) = lanemarking(QT, sET)
 (Scheme, lanegroup, optc) = Reoptimize.reoptLA(QT, marking, supTab, schemeset, turning)
-
+# print(lanegroup)
+# print(u)
 # 给出车辆初始状态信息，entry为字典，key为move; value 每辆车初始状态的列表
 entry = initialize(usedQ, slope, vmax, P, T)
 entry1 = copy.deepcopy(entry)

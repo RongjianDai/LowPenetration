@@ -75,7 +75,7 @@ class Vehicle:
         for i in range(len(p)):
             o = self.locspeed(init, p, p[i][1])
             d = self.locspeed(init, p, p[i][2])
-            if o[0] < x <= d[0]:
+            if o[0] <= x <= d[0]:
                 t = sympy.Symbol('t', real=True)
                 eq = o[0] + o[1] * t + 0.5 * p[i][0] * t ** 2 - x
                 result = sympy.solve(eq)
@@ -94,7 +94,7 @@ class Vehicle:
         return p2x
 
     # Determining whether a backward shooting process is needed
-    def needbackward(self, pf, green, L, T):
+    def needbackward(self, pf, green, L):
         needBSP = True
         arrival = self.time2x(self.init, pf, L)
         # arrival = pf[-1][1]
@@ -102,7 +102,7 @@ class Vehicle:
             needBSP = False
             return needBSP, arrival
 
-        expectarrive = T
+        expectarrive = arrival
         # 自车为CAV，前车为HV
         if self.init[3] == 1 and self.linit is not None and self.linit[3] == 0:
             leadarrive = self.time2x(self.linit, self.lp, L)
@@ -353,7 +353,7 @@ class Vehicle:
 
         p = pf
         # Backward shooting process
-        needBSP, expectarrive = self.needbackward(pf, green, L, T)
+        needBSP, expectarrive = self.needbackward(pf, green, L)
         # print('isneeded:', needBSP)
         if needBSP:  # 需要BSP
             # print('expectarrive:', expectarrive)
@@ -436,7 +436,7 @@ class Vehicle:
 
         p = pf
         # Backward shooting process
-        needBSP, expectarrive = self.needbackward(pf, green, L, T)
+        needBSP, expectarrive = self.needbackward(pf, green, L)
         # print('isneeded:', needBSP)
         if needBSP:
             # print('expectarrive:', expectarrive)
