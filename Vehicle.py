@@ -47,15 +47,15 @@ class Vehicle:
         (t0, v0) = (self.linit[0], self.linit[1])
         st0 = t0 + self.toff + self.doff / v0
         sX = self.locspeed(self.linit, self.lp, (st0 - self.toff))
-        self.sinit = [st0, sX[1]]
+        self.sinit = [st0, sX[1], self.linit[2]]
         for i in range(len(lp)):
             if (lp[i][1] + self.toff) > st0:
                 self.ps.append([lp[i - 1][0], st0, (lp[i][1] + self.toff)])
                 for j in range(i, len(lp)):
                     self.ps.append([self.lp[j][0], (self.lp[j][1] + self.toff), (self.lp[j][2] + self.toff)])
-                last = self.ps[-1][2]
-                self.ps.append([0, last, last + 20])
                 break
+        last = self.ps[-1][2]
+        self.ps.append([0, last, last + 10])
 
     # The possible earliest arrival time
     def fastarrival(self, L):
@@ -206,10 +206,11 @@ class Vehicle:
         xn, vn = selfX[0], selfX[1]
         # 判断是否可能，不可能直接返回
         segendX = self.locspeed(self.init, pf, fseg[2])
+        segstartX = self.locspeed(self.init, pf, fseg[1])
         if segendX[0] - segendX[1] ** 2 / (2 * self.a2) < xstop:
             return ismerge, Ts, Tm
-        else:
-            pass
+        if segstartX[0] >= L:
+            return ismerge, Ts, Tm
         if which == 1:  # Stop segment
             segstartX = self.locspeed(self.init, pf, fseg[1])
             if segstartX[0] - segstartX[1] ** 2 / (2 * self.a2) >= xstop:
@@ -335,6 +336,7 @@ class Vehicle:
             else:
                 self.init[0] = self.sinit[0]
                 self.init[1] = self.sinit[1]
+                self.init[2] = self.sinit[2]
                 pf = self.ps
 
         p = pf
@@ -417,6 +419,7 @@ class Vehicle:
             else:
                 self.init[0] = self.sinit[0]
                 self.init[1] = self.sinit[1]
+                self.init[2] = self.sinit[2]
                 pf = self.ps
 
         p = pf
@@ -435,6 +438,7 @@ class Vehicle:
                     p.append([self.a2, Ts, Tm])
                     p.append([0, Tm, expectarrive])
                     p.append([self.a1, expectarrive, (expectarrive + t0vmax)])
+                    p.append([0, (expectarrive + t0vmax), (expectarrive + t0vmax + 10)])
                     break
                 else:
                     ismerge, Ts, Tm, Vm = self.H_BSP(pf, 2, seg, L, expectarrive)
@@ -444,7 +448,7 @@ class Vehicle:
                         p.append([seg[0], seg[1], Ts])
                         p.append([self.a2, Ts, expectarrive])
                         p.append([self.a1, expectarrive, (expectarrive + t2vmax)])
-                        p.append([0, (expectarrive + t2vmax), (expectarrive + t2vmax + 5)])
+                        p.append([0, (expectarrive + t2vmax), (expectarrive + t2vmax + 10)])
                         break
                     else:
                         continue
@@ -462,10 +466,11 @@ class Vehicle:
         xn, vn = selfX[0], selfX[1]
         # 判断是否可能，不可能直接返回
         segendX = self.locspeed(self.init, pf, fseg[2])
+        segstartX = self.locspeed(self.init, pf, fseg[1])
         if segendX[0] - segendX[1] ** 2 / (2 * self.a2) < L:
             return ismerge, Ts, Tm, Vm
-        else:
-            pass
+        if segstartX[0] >= L:
+            return ismerge, Ts, Tm, Vm
         if which == 1:  # Need stop
             ts, tm = sympy.symbols('ts tm', real=True, positive=True)
             eq1 = vn + an * (ts - tn) + self.a2 * (tm - ts)

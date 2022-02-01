@@ -227,7 +227,7 @@ def plotTra(platoon, P, L, green, T, clt, filename):
         x_t = locationt(initn, pn, tn)
         ax.plot(tn, x_t, linewidth=1)
     ax.set_ylim(bottom=0, top=L + 20)
-    ax.set_xlim(left=0)
+    ax.set_xlim(left=0, right=T)
     ax.set_xlabel('Time (s)', fontsize=12, fontname='Times New Roman')
     ax.set_ylabel('Space (m)', fontsize=12, fontname='Times New Roman')
     labels = ax.get_xticklabels() + ax.get_yticklabels()
