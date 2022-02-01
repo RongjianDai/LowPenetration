@@ -15,6 +15,7 @@ class Vehicle:
         self.a2 = a2
         self.index = n
         self.init = init
+        self.rightturn = True if init[2] == 12 else False
         self.toff = toff[0] if self.init[3] == 1 else toff[1]
         self.doff = doff[0] if self.init[3] == 1 else doff[1]
         self.lp = None
@@ -54,8 +55,12 @@ class Vehicle:
                 for j in range(i, len(lp)):
                     self.ps.append([self.lp[j][0], (self.lp[j][1] + self.toff), (self.lp[j][2] + self.toff)])
                 break
-        last = self.ps[-1][2]
-        self.ps.append([0, last, last + 10])
+        # 如果最后一段是匀速，说明已添加延长段
+        if self.ps[-1][0] != 0:
+            last = self.ps[-1][2]
+            self.ps.append([0, last, last + 10])
+        else:
+            pass
 
     # The possible earliest arrival time
     def fastarrival(self, L):
@@ -93,11 +98,13 @@ class Vehicle:
         needBSP = True
         arrival = self.time2x(self.init, pf, L)
         # arrival = pf[-1][1]
-        if self.init[2] == 12:   # 右转车辆不需要BSP
+        if self.rightturn is True:   # 右转车辆不需要BSP
             needBSP = False
             return needBSP, arrival
+
         expectarrive = T
-        if self.init[3] == 1 and self.linit is not None and self.linit[3] == 0:  # 自车为CAV，前车为HV
+        # 自车为CAV，前车为HV
+        if self.init[3] == 1 and self.linit is not None and self.linit[3] == 0:
             leadarrive = self.time2x(self.linit, self.lp, L)
             initspeed = self.locspeed(self.linit, self.lp, leadarrive)
             addtime = (self.init[2] - initspeed[1]) ** 2 / (
@@ -149,13 +156,15 @@ class Vehicle:
             tn_1, an_1, vn_1, xn_1 = psseg[1], psseg[0], shadX[1], shadX[0]
             # 判断是否可能，不可能继续下一段
             segendX = self.locspeed(self.init, pf, seg[2])
-            if segendX[0] - segendX[1] ** 2 / (2 * self.a2) < shadX[0]:
+            if tn > psseg[2]:
                 continue
-            if tn > psseg[2] and seg[2] < psseg[1]:
+            elif segendX[0] - segendX[1] ** 2 / (2 * self.a2) < shadX[0]:
                 continue
-            if segendX[1] <= shadX[1] or shadX[1] >= self.init[2]:
+            elif tn > psseg[2] and seg[2] < psseg[1]:
                 continue
-            if vn - vn_1 < 0.01 and an_1 == an == 0:
+            elif segendX[1] <= shadX[1] or shadX[1] >= self.init[2]:
+                continue
+            elif vn - vn_1 < 0.01 and an_1 == an == 0:
                 continue
             else:
                 # print('Forward shooting!')
@@ -431,8 +440,10 @@ class Vehicle:
         # print('isneeded:', needBSP)
         if needBSP:
             # print('expectarrive:', expectarrive)
+            # print('pf:', pf)
             for i in range(1, len(pf)):
                 seg = pf[i]
+                # print('第', i, '段pf')
                 ismerge, Ts, Tm, Vm = self.H_BSP(pf, 1, seg, L, expectarrive)
                 if ismerge:
                     t0vmax = self.init[2] / self.a1

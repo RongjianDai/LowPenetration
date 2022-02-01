@@ -25,7 +25,7 @@ def DP(platoon):
         # 搜索最有信号配时方案
         signal[c] = signaltiming(nowpla, c)
         # 记录需要在下周期考虑的车辆开始索引
-        first = Supplymethods.recordlast(first, nowpla, end)
+        first = Supplymethods.recordlast(first, nowpla, end, L)
         # print('First in next cycle: ', first)
         c += 1
         if c > T / H:
@@ -87,8 +87,6 @@ def signaltiming(state, c):
             optJSX[j] = optSX
             # print('optJSX:', optJSX)
             # print('funcJ', funcJ)
-        # if j == 1:
-        #     break
         if j > H / clt:
             break
         if j >= 1 and 0 <= (funcJ[j-1][H] - funcJ[j][H]) / funcJ[j-1][H] < 0.05:

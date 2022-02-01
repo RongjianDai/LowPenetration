@@ -12,7 +12,7 @@ import xlsxwriter
 
 
 # 记录剩余车辆索引
-def recordlast(first, nowpla, end):
+def recordlast(first, nowpla, end, L):
     last = [None] * 16
     for i in range(16):
         pla = nowpla[i]
@@ -20,8 +20,7 @@ def recordlast(first, nowpla, end):
             last[i] = first[i]
         else:
             for veh in pla:
-                if veh.fastarrival(300) > end:
-                # if veh.p[-1][1] > end:  # 本周期内无法到达
+                if veh.fastarrival(L) > end:
                     last[i] = veh.index
                     break
                 else:
