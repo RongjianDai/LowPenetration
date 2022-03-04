@@ -260,3 +260,28 @@ def savetraveltime(P, scenario):
         sheet.write_number(i + 1, 1, average)
         sheet.write_number(i + 1, 2, vehnum)
     workbook.close()
+
+
+# Save the signal timing plan
+def savesignal(signal, scenario):
+    if scenario == 0:
+        filename = 'data\\DLAsignal.xlsx'
+        workbook = xlsxwriter.Workbook(filename)
+        sheet = workbook.add_worksheet('DLA')
+    else:
+        filename = 'data\\Fixedsignal.xlsx'
+        workbook = xlsxwriter.Workbook(filename)
+        sheet = workbook.add_worksheet('Fixed')
+    # sheet.write(0, 0, 'Phase')
+    for i in range(4):
+        sheet.write(0, 2 * i, i + 1)
+        sheet.write(1, 2 * i, 'Start')
+        sheet.write(1, 2 * i + 1, 'End')
+
+    for i in range(4):
+        green = signal[i]
+        for j in range(len(green)):
+            sheet.write(2 + j, 2 * i, green[j][0])
+            sheet.write(2 + j, 2 * i + 1, green[j][1])
+
+    workbook.close()
