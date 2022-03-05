@@ -262,6 +262,28 @@ def savetraveltime(P, scenario):
     workbook.close()
 
 
+# Save the travel time of individual vehicle
+def vehicleTratime(P, scenario):
+    if scenario == 0:
+        filename = 'data\\DLAvehTime.xlsx'
+        workbook = xlsxwriter.Workbook(filename)
+        sheet = workbook.add_worksheet('DLA')
+    else:
+        filename = 'data\\FixedvehTime.xlsx'
+        workbook = xlsxwriter.Workbook(filename)
+        sheet = workbook.add_worksheet('Fixed')
+
+    for i in range(16):
+        sheet.write(0, i, i + 1)
+        mp = P[i]
+        for j in range(len(mp)):
+            p = mp[j]
+            traveltime = p[-1][1] - p[0][1]
+            sheet.write(j + 1, i, traveltime)
+
+    workbook.close()
+
+
 # Save the signal timing plan
 def savesignal(signal, scenario):
     if scenario == 0:
@@ -274,14 +296,17 @@ def savesignal(signal, scenario):
         sheet = workbook.add_worksheet('Fixed')
     # sheet.write(0, 0, 'Phase')
     for i in range(4):
-        sheet.write(0, 2 * i, i + 1)
-        sheet.write(1, 2 * i, 'Start')
-        sheet.write(1, 2 * i + 1, 'End')
+        sheet.write(0, 3 * i, i + 1)
+        sheet.write(1, 3 * i, 'Start')
+        sheet.write(1, 3 * i + 1, 'End')
+        sheet.write(1, 3 * i + 2, 'Duration')
 
     for i in range(4):
         green = signal[i]
         for j in range(len(green)):
-            sheet.write(2 + j, 2 * i, green[j][0])
-            sheet.write(2 + j, 2 * i + 1, green[j][1])
+            sheet.write(2 + j, 3 * i, green[j][0])
+            sheet.write(2 + j, 3 * i + 1, green[j][1])
+            sheet.write(2 + j, 3 * i + 2, green[j][1] - green[j][0])
 
     workbook.close()
+

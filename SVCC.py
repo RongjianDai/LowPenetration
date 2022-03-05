@@ -185,5 +185,6 @@ if __name__ == "__main__":
         Supplymethods.savesignal(signal, scenario)
         P = trajectory(platoon, signal, T)
         Supplymethods.savetraveltime(P, scenario)
-        showtrajectory(platoon, P, signal, folder)
+        Supplymethods.vehicleTratime(P, scenario)
+        # showtrajectory(platoon, P, signal, folder)
 
