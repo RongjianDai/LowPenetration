@@ -8,7 +8,7 @@ Created on Date 2022-01-16
 # Simulation parameters
 (T, H) = (1200, 60)
 # 渗透率
-P = 0.4
+P = 0.5
 L = 300
 # 信号控制参数
 (minG, clt, tstep) = (10, 2, 1)
@@ -32,7 +32,7 @@ basicQ = [[0, 200, 400, 100],
          [150, 0, 150, 200],
          [380, 150, 0, 180],
          [100, 200, 100, 0]]
-flowfactor = 1
+flowfactor = 1.0
 # 变化模式: vt[i]=0表示不变化； vt[i]=1表示arm i上左转和直行变化；vt[i]=2表示arm i上右转转和直行变化；vt[i]=3表示arm i上左转和右转变化
 vt = [1, 0, 1, 0]
 

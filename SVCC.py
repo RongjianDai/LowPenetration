@@ -11,6 +11,7 @@ import W_R_data
 from Vehicle import *
 import Supplymethods
 import Traveltime
+import joblib
 
 
 def DP(platoon):
@@ -167,6 +168,26 @@ def showtrajectory(platoon, P, signal, folder):
         Supplymethods.plotTra(pla, mp, L, green, T, clt, filename)
 
 
+def sloveandSave(scenario, file):
+    state = W_R_data.readinit(file)
+    platoon = generation(state)
+    green = DP(platoon)
+    signal = Supplymethods.regulargreen(green, H, clt)
+    print('signal:', signal)
+    Supplymethods.savesignal(signal, scenario)
+    P = trajectory(platoon, signal, T)
+    Supplymethods.savetraveltime(P, scenario)
+    Supplymethods.vehicleTratime(P, scenario)
+    if scenario == 0:
+        joblib.dump(platoon, 'platoon_DLA.pkl')
+        joblib.dump(signal, 'signal_DLA.pkl')
+        joblib.dump(P, 'Trajectory_DLA.pkl')
+    else:
+        joblib.dump(platoon, 'platoon_Fixed.pkl')
+        joblib.dump(signal, 'signal_Fixed.pkl')
+        joblib.dump(P, 'Trajectory_Fixed.pkl')
+
+
 # 主函数
 if __name__ == "__main__":
     # scenario = 0
@@ -174,17 +195,21 @@ if __name__ == "__main__":
         if scenario == 0:
             file = 'data\\InitialStates.xls'
             folder = 'figure\\DLA'
+
+            # sloveandSave(scenario, file)
+            platoon = joblib.load('platoon_DLA.pkl')
+            P = joblib.load('Trajectory_DLA.pkl')
+            signal = joblib.load('signal_DLA.pkl')
+            showtrajectory(platoon, P, signal, folder)
         else:
             file = 'data\\TradInitialStates.xls'
             folder = 'figure\\Fixed'
-        state = W_R_data.readinit(file)
-        platoon = generation(state)
-        green = DP(platoon)
-        signal = Supplymethods.regulargreen(green, H, clt)
-        print('signal:', signal)
-        Supplymethods.savesignal(signal, scenario)
-        P = trajectory(platoon, signal, T)
-        Supplymethods.savetraveltime(P, scenario)
-        Supplymethods.vehicleTratime(P, scenario)
-        # showtrajectory(platoon, P, signal, folder)
+
+            # sloveandSave(scenario, file)
+            # platoon = joblib.load('platoon_Fixed.pkl')
+            # P = joblib.load('Trajectory_Fixed.pkl')
+            # signal = joblib.load('signal_Fixed.pkl')
+            # showtrajectory(platoon, P, signal, folder)
+
+
 

@@ -203,34 +203,41 @@ def plotTra(platoon, P, L, green, T, clt, filename):
     for g in green:
         clock = np.arange(g[0], g[1], 0.2)
         y = np.ones_like(clock) + L
-        ax.plot(clock, y, color="green", linewidth=3)
+        ax.plot(clock, y, linestyle='solid', linewidth=3, color="green")
         clocky = np.arange(g[1], g[1] + clt, 0.2)
         yy = np.ones_like(clocky) + L
-        ax.plot(clocky, yy, color="yellow", linewidth=3)
+        ax.plot(clocky, yy, linestyle='solid', linewidth=3, color="yellow")
     # 绘制红灯信号
-    clock1 = np.arange(0, green[0][0], 0.2)
-    y = np.ones_like(clock1) + L
-    ax.plot(clock1, y, color="red", linewidth=3)
-    clock2 = np.arange(green[-1][1] + clt, T, 0.2)
-    y = np.ones_like(clock2) + L
-    ax.plot(clock2, y, color="red", linewidth=3)
+    # clock1 = np.arange(0, green[0][0], 0.2)
+    # y = np.ones_like(clock1) + L
+    # ax.plot(clock1, y, linewidth=3, color="red")
+    # clock2 = np.arange(green[-1][1] + clt, T, 0.2)
+    # y = np.ones_like(clock2) + L
+    # ax.plot(clock2, y, linewidth=3, color="red")
+
     for i in range(0, len(green) - 1):
         clock = np.arange(green[i][1] + clt, green[i+1][0], 0.2)
         y = np.ones_like(clock) + L
-        ax.plot(clock, y, color="red", linewidth=3)
+        ax.plot(clock, y, linewidth=3, color="red")
     for n in range(len(platoon)):
         initn = platoon[n].init
         pn = P[n]
         s, e = pn[0][1], pn[-1][2]
         tn = np.arange(s, e, 0.2)
         x_t = locationt(initn, pn, tn)
-        ax.plot(tn, x_t, linewidth=1)
+        if initn[3] == 1:
+            # ax.plot(tn, x_t, linewidth=1, color='darkorange')
+            ax.plot(tn, x_t, linestyle='solid', linewidth=1, color='blue')
+        else:
+            # ax.plot(tn, x_t, linewidth=1, color='blue')
+            ax.plot(tn, x_t, linestyle='dashed', linewidth=1, color='blue')
     ax.set_ylim(bottom=0, top=L + 20)
     ax.set_xlim(left=0, right=T)
-    ax.set_xlabel('Time (s)', fontsize=12, fontname='Times New Roman')
-    ax.set_ylabel('Space (m)', fontsize=12, fontname='Times New Roman')
+    ax.set_xlabel('Time (s)', fontsize=14, fontname='Times New Roman')
+    ax.set_ylabel('Space (m)', fontsize=14, fontname='Times New Roman')
     labels = ax.get_xticklabels() + ax.get_yticklabels()
     [label.set_fontname('Times New Roman') for label in labels]
+    [label.set_fontsize(14) for label in labels]
     plt.savefig(filename + ".png", dpi=600)
     # plt.show()
     plt.close(fig)
