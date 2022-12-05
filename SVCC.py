@@ -196,7 +196,7 @@ if __name__ == "__main__":
             file = 'data\\InitialStates.xls'
             folder = 'figure\\DLA'
 
-            # sloveandSave(scenario, file)
+            sloveandSave(scenario, file)
             platoon = joblib.load('platoon_DLA.pkl')
             P = joblib.load('Trajectory_DLA.pkl')
             signal = joblib.load('signal_DLA.pkl')

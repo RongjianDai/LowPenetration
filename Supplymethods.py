@@ -208,17 +208,20 @@ def plotTra(platoon, P, L, green, T, clt, filename):
         yy = np.ones_like(clocky) + L
         ax.plot(clocky, yy, linestyle='solid', linewidth=3, color="yellow")
     # 绘制红灯信号
-    # clock1 = np.arange(0, green[0][0], 0.2)
-    # y = np.ones_like(clock1) + L
+    clock1 = np.arange(0, green[0][0], 0.2)
+    y = np.ones_like(clock1) + L
     # ax.plot(clock1, y, linewidth=3, color="red")
-    # clock2 = np.arange(green[-1][1] + clt, T, 0.2)
-    # y = np.ones_like(clock2) + L
+    ax.plot(clock1, y, linewidth=3, color="mistyrose")
+    clock2 = np.arange(green[-1][1] + clt, T, 0.2)
+    y = np.ones_like(clock2) + L
     # ax.plot(clock2, y, linewidth=3, color="red")
-
+    ax.plot(clock2, y, linewidth=3, color="mistyrose")
     for i in range(0, len(green) - 1):
         clock = np.arange(green[i][1] + clt, green[i+1][0], 0.2)
         y = np.ones_like(clock) + L
-        ax.plot(clock, y, linewidth=3, color="red")
+        # ax.plot(clock, y, linewidth=3, color="red")
+        ax.plot(clock, y, linewidth=3, color="mistyrose")
+
     for n in range(len(platoon)):
         initn = platoon[n].init
         pn = P[n]
@@ -227,10 +230,10 @@ def plotTra(platoon, P, L, green, T, clt, filename):
         x_t = locationt(initn, pn, tn)
         if initn[3] == 1:
             # ax.plot(tn, x_t, linewidth=1, color='darkorange')
-            ax.plot(tn, x_t, linestyle='solid', linewidth=1, color='blue')
+            ax.plot(tn, x_t, linestyle='dashed', linewidth=1, color='blue')
         else:
             # ax.plot(tn, x_t, linewidth=1, color='blue')
-            ax.plot(tn, x_t, linestyle='dashed', linewidth=1, color='blue')
+            ax.plot(tn, x_t, linestyle='solid', linewidth=1, color='blue')
     ax.set_ylim(bottom=0, top=L + 20)
     ax.set_xlim(left=0, right=T)
     ax.set_xlabel('Time (s)', fontsize=14, fontname='Times New Roman')
