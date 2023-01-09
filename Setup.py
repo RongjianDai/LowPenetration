@@ -10,6 +10,9 @@ import LA
 
 
 # Initialize the slope of Q
+import Scenario
+
+
 def qvariation(turning, basicQ, T, vt):
     """
     :param basicQ: 基础流量
@@ -73,9 +76,12 @@ def genveh(q, vmax, P, slope, T):
     clock = t0
     averh = 3600 / q
     while True:
-        headway = np.random.exponential(averh, 1)[0]
-        clock += headway
         averh = 3600 / qt(clock, q, slope)
+        headway = np.random.exponential(averh, 1)[0]
+        if headway >= 2 + 6.5 / vmax:
+            clock += headway
+        else:
+            continue
         if clock >= T:
             break
         else:
