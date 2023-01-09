@@ -39,10 +39,10 @@ entry1 = copy.deepcopy(entry)
 initstate = Movements.movements(entry, Scheme, turning, H)
 inittradition = Movements.tramovements(entry1, Scheme, turning, H)
 # Save the initial states of vehicles for each lane-level movement as a .xls file
-filename = 'data\\InitialStates.xls'
+filename = 'data/InitialStates.xls'
 W_R_data.saveinit(initstate, filename)
 # Fixed lane assignment
-filename1 = 'data\\TradInitialStates.xls'
+filename1 = 'data/TradInitialStates.xls'
 W_R_data.saveinit(inittradition, filename1)
 # Save the lane assignment schemes in each control cycle as a .csv file
 W_R_data.saveLA(lanegroup)

@@ -164,7 +164,7 @@ def showtrajectory(platoon, P, signal, folder):
         pla = platoon[i]
         phase = m2p[i]
         green = signal[phase]
-        filename = folder + '\\Movement' + str(i)
+        filename = folder + '/Movement' + str(i)
         Supplymethods.plotTra(pla, mp, L, green, T, clt, filename)
 
 
@@ -193,8 +193,8 @@ if __name__ == "__main__":
     # scenario = 0
     for scenario in range(2):
         if scenario == 0:
-            file = 'data\\InitialStates.xls'
-            folder = 'figure\\DLA'
+            file = 'data/InitialStates.xls'
+            folder = 'figure/DLA'
 
             sloveandSave(scenario, file)
             platoon = joblib.load('platoon_DLA.pkl')
@@ -202,14 +202,14 @@ if __name__ == "__main__":
             signal = joblib.load('signal_DLA.pkl')
             showtrajectory(platoon, P, signal, folder)
         else:
-            file = 'data\\TradInitialStates.xls'
-            folder = 'figure\\Fixed'
+            file = 'data/TradInitialStates.xls'
+            folder = 'figure/Fixed'
 
-            # sloveandSave(scenario, file)
-            # platoon = joblib.load('platoon_Fixed.pkl')
-            # P = joblib.load('Trajectory_Fixed.pkl')
-            # signal = joblib.load('signal_Fixed.pkl')
-            # showtrajectory(platoon, P, signal, folder)
+            sloveandSave(scenario, file)
+            platoon = joblib.load('platoon_Fixed.pkl')
+            P = joblib.load('Trajectory_Fixed.pkl')
+            signal = joblib.load('signal_Fixed.pkl')
+            showtrajectory(platoon, P, signal, folder)
 
 
 

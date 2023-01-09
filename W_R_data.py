@@ -11,7 +11,7 @@ import csv
 
 # 车道功能存储
 def saveLA(lanegroup):
-    with open('data\\LA scheme.csv', 'w', newline='') as csvfile:
+    with open('data/LA scheme.csv', 'w', newline='') as csvfile:
         fieldnames = ['Cycle', 0, 1, 2, 3]
         writer = csv.writer(csvfile)
         # 写入Arm index

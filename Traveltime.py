@@ -15,30 +15,29 @@ def averagetime(nowpla, m2p, signal, L, H, toff, doff, c):
         phase = m2p[i]
         # print('Phase:', phase)
         pla = nowpla[i]
-        green = signal[phase]
-        arrival = []
+        green = signal[phase]    # 一个相位的绿灯
+        R = []
+        Ae, T0 = [], []
         for n in range(len(pla)):
             init = pla[n].init
             fast = fastarrival(init, L, pla[n].a1)
+            Ae.append(fast)
+            T0.append(init[0])
+
+        for n in range(len(pla)):
             if n == 0:
                 if init[2] == 12:
-                    exparrive = fast
+                    R0 = Ae[0]
                 else:
-                    exparrive = canpass(fast, green, H, c)
-                # print('Fast:', fast, 'Expectarrival: ', exparrive)
-                arrival.append(exparrive)
-                delay.append(exparrive - fast)
+                    R0 = canpass(Ae[0], green, H, c)
+                R.append(R0)
+                delay.append(R0 - Ae[0])
             else:
+                Rn_1 = R[n - 1]
                 headway = (toff[0] + doff[0] / init[2]) if init[3] == 1 else (toff[1] + doff[1] / init[2])
-                leadarrive = arrival[n - 1]
-                mayarrive = leadarrive + headway if fast < leadarrive + headway else fast
-                if init[2] == 12:
-                    exparrive = mayarrive
-                else:
-                    exparrive = canpass(mayarrive, green, H, c)
-                # print('Fast:', fast, 'Expectarrival: ', exparrive)
-                arrival.append(exparrive)
-                delay.append(exparrive - fast)
+                Rn = Ae[n] if Ae[n] >= Rn_1 + headway else Rn_1 + headway
+                R.append(Rn)
+                delay.append(Rn - Ae[n])
 
     return np.mean(delay)
 

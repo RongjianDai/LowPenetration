@@ -14,7 +14,7 @@ class Vehicle:
         self.a1 = a1
         self.a2 = a2
         self.index = n
-        self.init = init
+        self.init = init   # [t0, v0, vmax, type]
         self.rightturn = True if init[2] == 12 else False
         self.toff = toff[0] if self.init[3] == 1 else toff[1]
         self.doff = doff[0] if self.init[3] == 1 else doff[1]

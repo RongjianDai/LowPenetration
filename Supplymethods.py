@@ -249,11 +249,11 @@ def plotTra(platoon, P, L, green, T, clt, filename):
 # Save the average travel time
 def savetraveltime(P, scenario):
     if scenario == 0:
-        filename = 'data\\DLATraveltime.xlsx'
+        filename = 'data/DLATraveltime.xlsx'
         workbook = xlsxwriter.Workbook(filename)
         sheet = workbook.add_worksheet('DLA')
     else:
-        filename = 'data\\FixedTraveltime.xlsx'
+        filename = 'data/FixedTraveltime.xlsx'
         workbook = xlsxwriter.Workbook(filename)
         sheet = workbook.add_worksheet('Fixed')
     sheet.write(0, 0, 'Movement')
@@ -275,11 +275,11 @@ def savetraveltime(P, scenario):
 # Save the travel time of individual vehicle
 def vehicleTratime(P, scenario):
     if scenario == 0:
-        filename = 'data\\DLAvehTime.xlsx'
+        filename = 'data/DLAvehTime.xlsx'
         workbook = xlsxwriter.Workbook(filename)
         sheet = workbook.add_worksheet('DLA')
     else:
-        filename = 'data\\FixedvehTime.xlsx'
+        filename = 'data/FixedvehTime.xlsx'
         workbook = xlsxwriter.Workbook(filename)
         sheet = workbook.add_worksheet('Fixed')
 
@@ -297,11 +297,11 @@ def vehicleTratime(P, scenario):
 # Save the signal timing plan
 def savesignal(signal, scenario):
     if scenario == 0:
-        filename = 'data\\DLAsignal.xlsx'
+        filename = 'data/DLAsignal.xlsx'
         workbook = xlsxwriter.Workbook(filename)
         sheet = workbook.add_worksheet('DLA')
     else:
-        filename = 'data\\Fixedsignal.xlsx'
+        filename = 'data/Fixedsignal.xlsx'
         workbook = xlsxwriter.Workbook(filename)
         sheet = workbook.add_worksheet('Fixed')
     # sheet.write(0, 0, 'Phase')
