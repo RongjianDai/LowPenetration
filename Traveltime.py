@@ -74,4 +74,83 @@ def fastarrival(init, L, a1):
     return t0 + t1 + t2
 
 
+def averdelay(nowpla, m2p, signal, L, H, toff, doff, c):
+    delay = []
+    end = (c + 1) * H
+    for i in range(16):
+        phase = m2p[i]
+        # print('Phase:', phase)
+        pla = nowpla[i]
+        green = signal[phase]  # 一个相位的绿灯
+        Ae, T0 = [], []
+        numvehs = len(pla)
+        for n in range(numvehs):
+            init = pla[n].init
+            fast = fastarrival(init, L, pla[n].a1)
+            Ae.append(fast)
+            T0.append(init[0])
+        if numvehs > 0:
+            R = []
+            numgreen = len(green)
+            if numgreen == 0:
+                R0 = end
+                R.append(R0)
+                for n in range(1, numvehs):
+                    Rn_1 = R[n - 1]
+                    headway = (toff[0] + doff[0] / init[2]) if init[3] == 1 else (toff[1] + doff[1] / init[2])
+                    Rn = Ae[n] if Ae[n] >= Rn_1 + headway else Rn_1 + headway
+                    R.append(Rn)
+            elif numgreen == 1:
+                S, E = green[0][0], green[0][1]
+                if E > S:
+                    R0 = max(Ae[0], S)
+                    R.append(R0)
+                    for n in range(1, numvehs):
+                        Rn_1 = R[n-1]
+                        headway = (toff[0] + doff[0] / init[2]) if init[3] == 1 else (toff[1] + doff[1] / init[2])
+                        Rn = Ae[n] if Ae[n] >= Rn_1 + headway else Rn_1 + headway
+                        Rn = Rn if Rn <= E else end
+                        R.append(Rn)
+                else:
+                    R0 = end
+                    R.append(R0)
+                    for n in range(1, numvehs):
+                        Rn_1 = R[n-1]
+                        headway = (toff[0] + doff[0] / init[2]) if init[3] == 1 else (toff[1] + doff[1] / init[2])
+                        Rn = Ae[n] if Ae[n] >= Rn_1 + headway else Rn_1 + headway
+                        R.append(Rn)
+            elif numgreen > 1:
+                R0 = end
+                for j in range(numgreen):
+                    if Ae[0] < green[j][0]:
+                        R0 = green[j][0]
+                        break
+                    elif green[j][0] <= Ae[0] < green[j][1]:
+                        R0 = Ae[0]
+                        break
+                    else:
+                        continue
+                R.append(R0)
+                for n in range(1, numvehs):
+                    Rn_1 = R[n - 1]
+                    headway = (toff[0] + doff[0] / init[2]) if init[3] == 1 else (toff[1] + doff[1] / init[2])
+                    Rn = Ae[n] if Ae[n] >= Rn_1 + headway else Rn_1 + headway
+                    if Rn > green[numgreen-1][1]:
+                        Rn = end
+                    j = 0
+                    while j < numgreen - 1:
+                        if green[j][1] < Rn <= green[j+1][0]:
+                            Rn = green[j+1][0]
+                            break
+                        j += 1
+
+                    R.append(Rn)
+
+            for n in range(numvehs):
+                delay.append(R[n] - Ae[n])
+
+        else:
+            delay.append(0)
+
+    return np.mean(delay)
 

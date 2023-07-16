@@ -6,6 +6,7 @@ Created on Date
 """
 
 import numpy as np
+import math
 import LA
 
 
@@ -43,7 +44,7 @@ def qvariation(turning, basicQ, T, vt):
     return s
 
 
-def initialize(basicQ, slope, vmax, P, T):
+def initialize(basicQ, slope, vmax, P, T, wave, gap, greentime, cyclen):
     """
     初始化：生成车辆初始状态
     :param basicQ: 基础交通流[4][4]列表
@@ -59,36 +60,70 @@ def initialize(basicQ, slope, vmax, P, T):
             if j == i:
                 pass
             else:
+                # 是否考虑上游交叉口到达模式
+                iswave = wave[i][j]
                 move = str(i) + '_' + str(j)
-                init = genveh(basicQ[i][j], vmax[i][j], P, slope[i][j], T)
+                init = genveh(basicQ[i][j], vmax[i][j], P, slope[i][j], T, iswave, gap, greentime[i][j], cyclen)
                 initVector[move] = init
     return initVector
 
 
-def genveh(q, vmax, P, slope, T):
+def genveh(q, vmax, P, slope, T, iswave, gap, greentime, cyclen):
     init = []
-    # 第一辆车
-    t0 = np.random.uniform(0, 5)
-    type = 1 if np.random.random() <= P else 0
-    v0 = np.random.uniform(0.8*vmax, vmax)
-    init.append([t0, v0, vmax, type])
-    # 所有车
-    clock = t0
-    averh = 3600 / q
-    while True:
-        averh = 3600 / qt(clock, q, slope)
-        headway = np.random.exponential(averh, 1)[0]
-        if headway >= 2 + 6.5 / vmax:
-            clock += headway
-        else:
-            continue
-        if clock >= T:
-            break
-        else:
-            t_ = clock
-            v0 = np.random.uniform(0.8 * vmax, vmax)
-            type = 1 if np.random.random() <= P else 0
-            init.append([t_, v0, vmax, type])
+    if iswave is False:
+        # 第一辆车
+        t0 = np.random.uniform(0, 5)
+        type = 1 if np.random.random() <= P else 0
+        v0 = np.random.uniform(0.8 * vmax, vmax)
+        init.append([t0, v0, vmax, type])
+        # 所有车
+        clock = t0
+        averh = 3600 / q
+        while True:
+            averh = 3600 / qt(clock, q, slope)
+            headway = np.random.exponential(averh, 1)[0]
+            if headway >= 2 + 6.5 / vmax:
+                clock += headway
+            else:
+                continue
+            if clock >= T:
+                break
+            else:
+                t_ = clock
+                v0 = np.random.uniform(0.8 * vmax, vmax)
+                type = 1 if np.random.random() <= P else 0
+                init.append([t_, v0, vmax, type])
+    else:
+        comerate = greentime / cyclen
+        intervals = []
+        numcycs = math.ceil(T / cyclen)
+        for i in range(numcycs):
+            S = i * cyclen
+            intervals.append([S+gap, S+gap+greentime])
+        # print('interval:', intervals)
+        c = 0
+        clock = intervals[0][0]
+        while True:
+            if c < numcycs and clock <= intervals[c][1]:
+                averh = 3600 / qt(clock, (q / comerate), slope)
+                headway = np.random.exponential(averh, 1)[0]
+                if headway >= 1:
+                    clock += headway
+                else:
+                    continue
+
+                t_ = clock
+                # print('t0:', t_)
+                v0 = np.random.uniform(0.8 * vmax, vmax)
+                type = 1 if np.random.random() <= P else 0
+                init.append([t_, v0, vmax, type])
+            else:
+                c += 1
+                if c >= numcycs:
+                    break
+                else:
+                    clock = intervals[c][0]
+                    # print('clock:', clock)
 
     return init
 

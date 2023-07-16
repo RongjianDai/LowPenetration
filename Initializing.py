@@ -32,18 +32,29 @@ QT = Qt(H, T, usedQ, slope)
 (Scheme, lanegroup, optc) = Reoptimize.reoptLA(QT, marking, supTab, schemeset, turning)
 # print(lanegroup)
 # print(u)
+wave = [[False, False, False, True],
+         [False, False, False, False],
+         [False, False, False, False],
+         [False, False, False, False]]
+cyclen, gap = 80, 20
+greentime = [[0, 10.61, 23.65, 23.65], [12.13, 0, 10.61, 12.13],
+             [23.65, 23.65, 0, 10.61],[10.61, 12.13, 10.61, 0]]
 # 给出车辆初始状态信息，entry为字典，key为move; value 每辆车初始状态的列表
-entry = initialize(usedQ, slope, vmax, P, T)
+entry = initialize(usedQ, slope, vmax, P, T, wave, gap, greentime, cyclen)
 entry1 = copy.deepcopy(entry)
+entry2 = copy.deepcopy(entry)
 # 将车辆组成16个lane-level movements
 initstate = Movements.movements(entry, Scheme, turning, H)
 inittradition = Movements.tramovements(entry1, Scheme, turning, H)
+initFixed = Movements.fixmovements(entry2, turning, H)
 # Save the initial states of vehicles for each lane-level movement as a .xls file
 filename = 'data/InitialStates.xls'
 W_R_data.saveinit(initstate, filename)
 # Fixed lane assignment
 filename1 = 'data/TradInitialStates.xls'
 W_R_data.saveinit(inittradition, filename1)
+filename2 = 'data/FixedInitialStates.xls'
+W_R_data.saveinit(initFixed, filename2)
 # Save the lane assignment schemes in each control cycle as a .csv file
 W_R_data.saveLA(lanegroup)
 

@@ -33,6 +33,7 @@ def DP(platoon):
             break
         else:
             continue
+    # print('Signal:', signal)
     return signal
 
 
@@ -44,18 +45,16 @@ def signaltiming(state, c):
     stateset = np.arange(minG + clt, H + 1, tstep)
     stateset = np.insert(stateset, 0, 0)
     # print('stateset', stateset)
-    funcJ = {}
-    optJSX = {}
+    funcJ, optJSX = {}, {}
     while True:
         if j == 0:
-            optfuncS = {}
-            optSX = {}
+            optfuncS, optSX = {}, {}
             for sj in stateset:
                 xj = sj - clt if sj - clt >= minG else 0
                 valueX = {}
                 signal = Supplymethods.firstgreen(c, xj, clt, H)
                 # print('sj:', sj, 'xj:', xj, 'signal:', signal)
-                valueX[xj] = Traveltime.averagetime(state, m2p, signal, L, H, toff, doff, c)
+                valueX[xj] = Traveltime.averdelay(state, m2p, signal, L, H, toff, doff, c)
                 # print('valueX', valueX)
                 optfuncS[sj] = valueX[xj]
                 optSX[sj] = xj
@@ -66,8 +65,7 @@ def signaltiming(state, c):
             # print('optJSX:', optJSX)
             # print('funcJ', funcJ)
         else:
-            optfuncS = {}
-            optSX = {}
+            optfuncS, optSX = {}, {}
             for sj in stateset:
                 Xsj = Supplymethods.feasibleX(minG, clt, tstep, sj)
                 # print('sj:', sj, 'Xsj:', Xsj)
@@ -76,7 +74,7 @@ def signaltiming(state, c):
                     sj_1 = sj if xj == 0 else sj - xj - clt
                     if sj_1 in stateset:
                         signal = Supplymethods.greenintervals(c, j, sj_1, xj, H, optJSX, clt)
-                        avertime = Traveltime.averagetime(state, m2p, signal, L, H, toff, doff, c)
+                        avertime = Traveltime.averdelay(state, m2p, signal, L, H, toff, doff, c)
                         valueX[xj] = avertime
                     else:
                         continue
@@ -88,9 +86,11 @@ def signaltiming(state, c):
             optJSX[j] = optSX
             # print('optJSX:', optJSX)
             # print('funcJ', funcJ)
+        # if j > 3:
+        #     break
         if j > H / clt:
             break
-        if j >= 1 and 0 <= (funcJ[j-1][H] - funcJ[j][H]) / funcJ[j-1][H] < 0.05:
+        if j >= 1 and 0 <= (funcJ[j - 1][H] - funcJ[j][H]) / funcJ[j - 1][H] < 0.05:
             break
         j += 1
     # Backward recursion
@@ -179,13 +179,13 @@ def sloveandSave(scenario, file):
     Supplymethods.savetraveltime(P, scenario)
     Supplymethods.vehicleTratime(P, scenario)
     if scenario == 0:
-        joblib.dump(platoon, 'platoon_DLA.pkl')
-        joblib.dump(signal, 'signal_DLA.pkl')
-        joblib.dump(P, 'Trajectory_DLA.pkl')
+        joblib.dump(platoon, 'data/savedpkl/platoon_DLA.pkl')
+        joblib.dump(signal, 'data/savedpkl/signal_DLA.pkl')
+        joblib.dump(P, 'data/savedpkl/Trajectory_DLA.pkl')
     else:
-        joblib.dump(platoon, 'platoon_Fixed.pkl')
-        joblib.dump(signal, 'signal_Fixed.pkl')
-        joblib.dump(P, 'Trajectory_Fixed.pkl')
+        joblib.dump(platoon, 'data/savedpkl/platoon_Fixed.pkl')
+        joblib.dump(signal, 'data/savedpkl/signal_Fixed.pkl')
+        joblib.dump(P, 'data/savedpkl/Trajectory_Fixed.pkl')
 
 
 # 主函数
@@ -197,19 +197,17 @@ if __name__ == "__main__":
             folder = 'figure/DLA'
 
             sloveandSave(scenario, file)
-            platoon = joblib.load('platoon_DLA.pkl')
-            P = joblib.load('Trajectory_DLA.pkl')
-            signal = joblib.load('signal_DLA.pkl')
+            platoon = joblib.load('data/savedpkl/platoon_DLA.pkl')
+            P = joblib.load('data/savedpkl/Trajectory_DLA.pkl')
+            signal = joblib.load('data/savedpkl/signal_DLA.pkl')
             showtrajectory(platoon, P, signal, folder)
         else:
             file = 'data/TradInitialStates.xls'
             folder = 'figure/Fixed'
 
             sloveandSave(scenario, file)
-            platoon = joblib.load('platoon_Fixed.pkl')
-            P = joblib.load('Trajectory_Fixed.pkl')
-            signal = joblib.load('signal_Fixed.pkl')
+            platoon = joblib.load('data/savedpkl/platoon_Fixed.pkl')
+            P = joblib.load('data/savedpkl/Trajectory_Fixed.pkl')
+            signal = joblib.load('data/savedpkl/signal_Fixed.pkl')
             showtrajectory(platoon, P, signal, folder)
-
-
 
